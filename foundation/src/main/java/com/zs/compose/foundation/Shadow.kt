@@ -123,6 +123,7 @@ private fun Canvas.shadow(
  * Currently, this modifier best supports complete shapes. Complex shapes with cutouts
  * (e.g., a disk with a circle punched in the center) might not render as expected.
  */
+@Deprecated("Compose introduced its own modifiers for such work.")
 @ExperimentalFoundationApi
 fun Modifier.shadow(
     elevation: Dp, // Elevation: negative for sunken, positive for elevated.

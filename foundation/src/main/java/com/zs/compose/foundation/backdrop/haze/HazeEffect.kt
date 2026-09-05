@@ -160,7 +160,7 @@ fun Modifier.hazeEffect(
         // Draw the base surface and decorative elements such as noise and border.
         Modifier.decorator(
             backgroundColor = surface,
-            roughness = noiseAmount,
+            noiseAlpha = noiseAmount,
             border = edgeHighlight,
             elevation = elevation,
             shape = shape

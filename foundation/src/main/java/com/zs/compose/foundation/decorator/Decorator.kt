@@ -17,6 +17,7 @@ import androidx.compose.ui.node.invalidateSemantics
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.zs.compose.foundation.unit.EdgeInsets
 
 
 private class DecoratorElement(
@@ -228,7 +229,7 @@ private class DecoratorElement(
  * @param borderBrush The brush used for the border (e.g., a gradient border).
  * @param borderWidth The thickness of the border. If [Dp.Unspecified], no border is drawn.
  * @param elevation The size of the shadow below the component.
- * @param roughness Controls the grain effect intensity. Value ranges from 0 (off) to 1.
+ * @param noiseAlpha Controls the grain effect intensity. Value ranges from 0 (off) to 1.
  * @param edgeInsets The additional space to be applied around the component's boundaries. Defaults to [EdgeInsets(0.dp)].
  */
 @Stable
@@ -266,10 +267,10 @@ fun Modifier.decorator(
     @FloatRange(from = 0.0, to = 1.0) scaleY: Float = 1.0f,
 
     // noise
-    @FloatRange(from = 0.0, to = 1.0) roughness: Float = 0.0f,
+    @FloatRange(from = 0.0, to = 1.0) noiseAlpha: Float = 0.0f,
 
     // insets
-    edgeInsets: EdgeInsets = EdgeInsets()
+    edgeInsets: EdgeInsets = com.zs.compose.foundation.unit.EdgeInsets()
 ) = this then DecoratorElement(
     // background
     backgroundColor = backgroundColor,
@@ -303,12 +304,15 @@ fun Modifier.decorator(
     scaleY = scaleY,
 
     //
-    roughness = roughness,
+    roughness = noiseAlpha,
 
     //
     edgeInsets = edgeInsets
 )
 
+/**
+ * @see decorator
+ */
 @Stable
 fun Modifier.decorator(
     // background
@@ -334,9 +338,9 @@ fun Modifier.decorator(
     //
     elevation: Dp = Dp.Unspecified,
     @FloatRange(from = 0.0, to = 1.0) scale: Float = 1.0f,
-    @FloatRange(from = 0.0, to = 1.0) roughness: Float = 0.0f,
+    @FloatRange(from = 0.0, to = 1.0) noiseAlpha: Float = 0.0f,
     //
-    edgeInsets: EdgeInsets = EdgeInsets(),
+    edgeInsets: EdgeInsets = com.zs.compose.foundation.unit.EdgeInsets(),
 ) = decorator(
     // background
     backgroundColor = backgroundColor,
@@ -367,7 +371,7 @@ fun Modifier.decorator(
     //
     elevation = elevation,
     //
-    roughness = roughness,
+    noiseAlpha = noiseAlpha,
     //
     edgeInsets = edgeInsets
 )
