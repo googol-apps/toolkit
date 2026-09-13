@@ -96,7 +96,7 @@ dependencies {
 
     // Image loading
     implementation(libs.coil.compose)                    // Coil integration for Compose
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.6.0") // Coil with OkHttp backend
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.6.2") // Coil with OkHttp backend
 
     // Project modules
     implementation(project(":theme"))                    // Custom theme module

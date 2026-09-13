@@ -24,7 +24,7 @@ maven-publish = { id = "maven-publish", version = "0.0.0" }                     
 # -----------------------------------------------------------------------------
 # Compose
 # -----------------------------------------------------------------------------
-compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2026.08.00" }
+compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2026.09.00" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.13.0" }
 androidx-material3 = { module = "androidx.compose.material3:material3", version = "1.4.0" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
@@ -49,7 +49,7 @@ androidx-material-icons-extended = { group = "androidx.compose.material", name =
 # MISC
 # -----------------------------------------------------------------------------
 androidx-preferences = { group = "androidx.datastore", name = "datastore-preferences", version = "1.2.1" }
-coil-compose = { module = "io.coil-kt.coil3:coil-compose", version = "3.6.0" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version = "3.6.2" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.19.0" }
 chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version = "1.7.2" }
 androidx-window = { group = "androidx.window", name = "window", version = "1.5.1" }
