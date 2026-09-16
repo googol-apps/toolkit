@@ -229,7 +229,7 @@ fun BasicPopupMenu(
     elevation: Dp = Dp.Unspecified,
     background: Background = Background(AppTheme.colors.background(1.dp)),
     contentColor: Color = AppTheme.colors.onBackground,
-    shape: Shape = AppTheme.shapes.small,
+    shape: Shape = AppTheme.shapes.large,
     border: BorderStroke? = if (AppTheme.colors.isLight) null else BorderStroke(0.5.dp, AppTheme.colors.background(20.dp)),
     properties: PopupProperties = DefaultMenuProperties,
     content: @Composable () -> Unit
@@ -362,7 +362,7 @@ fun DropDownMenu(
     elevation: Dp = Dp.Unspecified,
     background: Background = Background(AppTheme.colors.background(1.dp)),
     contentColor: Color = AppTheme.colors.onBackground,
-    shape: Shape = AppTheme.shapes.small,
+    shape: Shape = AppTheme.shapes.large,
     border: BorderStroke? = if (AppTheme.colors.isLight) null else BorderStroke(0.5.dp, AppTheme.colors.background(20.dp)),
     scrollState: ScrollState? = null,
     properties: PopupProperties = DefaultMenuProperties,
