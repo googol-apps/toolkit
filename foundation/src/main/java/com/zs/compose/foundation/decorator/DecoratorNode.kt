@@ -281,8 +281,8 @@ internal class DecoratorNode(
 
     override fun onDetach() {
         super.onDetach()
-        if (!(::graphicsLayer.isInitialized) || graphicsLayer.isReleased) graphicsLayer =
-            requireGraphicsContext().createGraphicsLayer()
+        if (::graphicsLayer.isInitialized && !graphicsLayer.isReleased)
+            requireGraphicsContext().releaseGraphicsLayer(graphicsLayer)
         noiseEffectBrush = null
         borderStroke = null
     }
