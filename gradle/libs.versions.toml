@@ -49,7 +49,7 @@ androidx-material-icons-extended = { group = "androidx.compose.material", name =
 # MISC
 # -----------------------------------------------------------------------------
 androidx-preferences = { group = "androidx.datastore", name = "datastore-preferences", version = "1.2.1" }
-coil-compose = { module = "io.coil-kt.coil3:coil-compose", version = "3.6.2" }
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.19.0" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version = "3.6.3" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.19.1" }
 chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version = "1.7.2" }
 androidx-window = { group = "androidx.window", name = "window", version = "1.5.1" }
