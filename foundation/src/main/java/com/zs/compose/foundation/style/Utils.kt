@@ -1,4 +1,4 @@
-package com.zs.compose.foundation.decorator
+package com.zs.compose.foundation.style
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.ui.graphics.ImageShader
 import androidx.compose.ui.graphics.ShaderBrush
-import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
 import androidx.compose.ui.node.currentValueOf
@@ -46,6 +45,6 @@ internal fun ShaderBrush(@DrawableRes id: Int): ShaderBrush {
     val img = bmp.asImageBitmap()
     // Create and return a ShaderBrush using the ImageShader for repeating the image:
     // TODO - Experiment with different tileModes.
-    val shader = ImageShader(img, TileMode.Repeated, TileMode.Repeated)
+    val shader = ImageShader(img, Repeated, Repeated)
     return ShaderBrush(shader)
 }

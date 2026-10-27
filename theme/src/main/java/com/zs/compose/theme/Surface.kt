@@ -38,7 +38,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.zs.compose.foundation.Slot
-import com.zs.compose.foundation.decorator.decorator
+import com.zs.compose.foundation.style.styleable
 
 @PublishedApi
 internal val BlockInputModifier = Modifier.pointerInput(Unit, {})
@@ -75,7 +75,7 @@ fun Surface(
         Slot(
             content = content,
             modifier = modifier
-                .decorator(
+                .styleable(
                     shape = shape,
                     backgroundColor = color,
                     elevation = elevation,
@@ -133,7 +133,7 @@ inline fun Surface(
     CompositionLocalProvider(LocalContentColor provides contentColor) {
         Slot(
             modifier = modifier
-                .decorator(
+                .styleable(
                     shape = shape,
                     backgroundColor = color,
                     border = border,
@@ -191,7 +191,7 @@ inline fun Surface(
     CompositionLocalProvider(LocalContentColor provides contentColor) {
         Slot(
             modifier = modifier
-                .decorator(
+                .styleable(
                     shape = shape,
                     backgroundColor = color,
                     border = border,
@@ -250,7 +250,7 @@ inline fun Surface(
     CompositionLocalProvider(LocalContentColor provides contentColor) {
         Slot(
             modifier = modifier
-                .decorator(
+                .styleable(
                     shape = shape,
                     backgroundColor = color,
                     border = border,

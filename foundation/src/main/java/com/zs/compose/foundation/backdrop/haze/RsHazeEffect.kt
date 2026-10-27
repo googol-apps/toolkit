@@ -15,7 +15,7 @@ import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Dp
 import com.zs.compose.foundation.backdrop.Backdrop
 import com.zs.compose.foundation.backdrop.LayerBackdrop
-import com.zs.compose.foundation.decorator.decorator
+import com.zs.compose.foundation.style.styleable
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -175,7 +175,7 @@ fun Modifier.legacyHazeEffect(
     duration: Duration = if (backdrop is LayerBackdrop) Duration.ZERO else 1.seconds
 ) = this then
         // Draw the base surface and decorative elements such as noise and border.
-        Modifier.decorator(
+        Modifier.styleable(
             backgroundColor = surface,
             noiseAlpha = noiseAmount,
             border = edgeHighlight,

@@ -18,7 +18,7 @@ import androidx.compose.ui.node.invalidateDraw
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Dp
 import com.zs.compose.foundation.backdrop.Backdrop
-import com.zs.compose.foundation.decorator.decorator
+import com.zs.compose.foundation.style.styleable
 
 /**
  * A [ModifierNodeElement] that creates and updates a [HazeEffectNode], applying a frosted
@@ -158,7 +158,7 @@ fun Modifier.hazeEffect(
     key: Any? = null
 ) = this then
         // Draw the base surface and decorative elements such as noise and border.
-        Modifier.decorator(
+        Modifier.styleable(
             backgroundColor = surface,
             noiseAlpha = noiseAmount,
             border = edgeHighlight,

@@ -1,4 +1,4 @@
-package com.zs.compose.foundation.decorator
+package com.zs.compose.foundation.style
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
@@ -100,7 +100,7 @@ internal class DecoratorNode(
     private lateinit var graphicsLayer: GraphicsLayer
 
     // 🗂️ Cached outline state to avoid recomputation unless inputs change
-    private var lastSize: Size = Size.Unspecified
+    private var lastSize: Size = Unspecified
     private var lastLayoutDirection: LayoutDirection? = null
     private var lastOutline: Outline? = null
     private var lastShape: Shape? = null
@@ -157,7 +157,7 @@ internal class DecoratorNode(
 
     // 🔄 Reset cached outline when observed reads change
     override fun onObservedReadsChanged() {
-        lastSize = Size.Unspecified
+        lastSize = Unspecified
         lastLayoutDirection = null
         lastOutline = null
         lastShape = null
@@ -232,7 +232,7 @@ internal class DecoratorNode(
         graphicsLayer.record {
             // Draw Background
             // Backgrounds are drawn first, behind the content.
-            if (backgroundColor != Color.Unspecified) drawRect(
+            if (backgroundColor != Unspecified) drawRect(
                 backgroundColor,
                 alpha = backgroundAlpha
             )
@@ -252,7 +252,7 @@ internal class DecoratorNode(
 
             // Draw Foreground
             // Foregrounds (overlays) are drawn on top of the content, but inside the border.
-            if (foregroundColor != Color.Unspecified) drawRect(
+            if (foregroundColor != Unspecified) drawRect(
                 foregroundColor,
                 alpha = foregroundAlpha
             )

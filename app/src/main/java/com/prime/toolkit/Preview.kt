@@ -21,34 +21,23 @@
 package com.prime.toolkit
 
 import android.util.Log
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.style.CommonStyleScope
 import androidx.compose.foundation.style.ExperimentalFoundationStyleApi
 import androidx.compose.foundation.style.MutableStyleState
 import androidx.compose.foundation.style.StyleScope
 import androidx.compose.foundation.style.StyleState
 import androidx.compose.foundation.style.StyleStateKey
-import androidx.compose.foundation.style.animate
-import androidx.compose.foundation.style.checked
 import androidx.compose.foundation.style.pressed
-import androidx.compose.foundation.style.rememberUpdatedStyleState
-import androidx.compose.foundation.style.selected
-import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -65,18 +54,15 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.zs.compose.foundation.Slot
-import com.zs.compose.foundation.decorator.decorator
+import com.zs.compose.foundation.style.styleable
 import com.zs.compose.foundation.style.background
 import com.zs.compose.foundation.style.border
 import com.zs.compose.foundation.style.elevation
-import com.zs.compose.foundation.style.padding
 import com.zs.compose.foundation.style.shape
-import com.zs.compose.foundation.style.styleable
 import com.zs.compose.theme.ExperimentalThemeApi
 import com.zs.compose.theme.LocalRippleConfiguration
 import com.zs.compose.theme.RippleConfiguration
 import com.zs.compose.theme.adaptive.content
-import com.zs.compose.theme.ripple
 import com.zs.compose.theme.text.Label
 
 private const val TAG = "Preview"
@@ -104,8 +90,8 @@ fun PreviewDecorator(modifier: Modifier = Modifier) {
                 "https://cdn.thegamesdb.net/images/original/boxart/front/53-1.jpg",
                 modifier = Modifier
                     .size(256.dp)
-                    .decorator(
-                        backgroundColor = Color.Unspecified,
+                    .styleable(
+                        backgroundColor = Unspecified,
                         shape = RoundedCornerShape(100),
                         border = BorderStroke(2.dp, Color.Red),
                         elevation = 10.dp,
