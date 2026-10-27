@@ -16,32 +16,68 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalThemeApi::class)
+@file:OptIn(ExperimentalThemeApi::class, ExperimentalFoundationStyleApi::class)
 
 package com.prime.toolkit
 
 import android.util.Log
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.style.CommonStyleScope
+import androidx.compose.foundation.style.ExperimentalFoundationStyleApi
+import androidx.compose.foundation.style.MutableStyleState
+import androidx.compose.foundation.style.StyleScope
+import androidx.compose.foundation.style.StyleState
+import androidx.compose.foundation.style.StyleStateKey
+import androidx.compose.foundation.style.animate
+import androidx.compose.foundation.style.checked
+import androidx.compose.foundation.style.pressed
+import androidx.compose.foundation.style.rememberUpdatedStyleState
+import androidx.compose.foundation.style.selected
+import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
+import com.zs.compose.foundation.Slot
 import com.zs.compose.foundation.decorator.decorator
+import com.zs.compose.foundation.style.background
+import com.zs.compose.foundation.style.border
+import com.zs.compose.foundation.style.elevation
+import com.zs.compose.foundation.style.padding
+import com.zs.compose.foundation.style.shape
+import com.zs.compose.foundation.style.styleable
 import com.zs.compose.theme.ExperimentalThemeApi
+import com.zs.compose.theme.LocalRippleConfiguration
+import com.zs.compose.theme.RippleConfiguration
 import com.zs.compose.theme.adaptive.content
+import com.zs.compose.theme.ripple
+import com.zs.compose.theme.text.Label
 
 private const val TAG = "Preview"
 
@@ -87,7 +123,69 @@ fun PreviewDecorator(modifier: Modifier = Modifier) {
     }
 }
 
+// 1. Create a custom StyleStateKey with a default value
+val SelectedStatekey = StyleStateKey(defaultValue = false)
 
+
+
+// 2. Add an extension property to easily get/set the state on MutableStyleState
+var StyleState.selected: Boolean
+    get() = this[SelectedStatekey]
+    set(value) {
+        if (this is MutableStyleState) {
+            this[SelectedStatekey] = value
+        }
+    }
+
+// 3. Create a conditional scope block for the Style DSL
+inline fun StyleScope.selected(crossinline block: StyleScope.() -> Unit) {
+    if (state.selected) {
+        block()
+    }
+}
+@Composable
+fun PreviewStyllable(modifier: Modifier = Modifier) {
+    var selected by remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
+    val styleState = remember { MutableStyleState(interactionSource) }
+    styleState.isChecked = selected
+
+    Log.d(TAG, "PreviewStyllable: ")
+    CompositionLocalProvider(
+        LocalRippleConfiguration provides RippleConfiguration(
+            color = Red
+        )
+    ) {
+        Slot(
+            modifier = Modifier
+
+                .styleable(
+                    interactions = interactionSource,
+                ) {
+                    Log.d(TAG, "PreviewStyllable: defult")
+                    background(Color.Green)
+                 //   padding(PaddingValues(20.dp))
+                    shape(RoundedCornerShape(1))
+                    elevation(5.dp)
+                    pressed {
+                        background(Color.Red)
+                        //   padding(PaddingValues(10.dp))
+                        shape(RoundedCornerShape(50))
+                        border(BorderStroke(2.dp, Color.White))
+                        elevation(20.dp)
+
+                    }
+                }
+                .graphicsLayer()
+                .clickable(interactionSource = interactionSource) {
+                    selected = !selected
+                }
+
+        ) {
+            Label(text = "Button")
+        }
+    }
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @androidx.compose.ui.tooling.preview.Preview
@@ -103,7 +201,7 @@ fun PreviewNode() {
     }) {
         val insets = WindowInsets.content
         Column(/*modifier = Modifier.padding(16.dp).windowInsetsPadding(insets)*/) {
-            Preview()
+            PreviewStyllable()
         }
     }
 }

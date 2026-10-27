@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.node.invalidateDraw
@@ -207,7 +208,7 @@ private class ShadowNode(
             val mask = BlurMaskFilter(
                 (elevationPx * if (elevated) POINT_95 else POINT_60), BlurMaskFilter.Blur.NORMAL
             )
-            val native = paint.asFrameworkPaint()
+            val native = paint.nativePaint
             native.maskFilter = mask
             // make paint for each shadow type separately
             when (elevated) {

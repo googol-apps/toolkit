@@ -37,7 +37,11 @@ kotlin {
 // 📱 Android project setup: namespace, SDK levels, build types, and features.
 android {
     namespace = "com.prime.toolkit"
-    compileSdk = 37
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 2
+        }
+    }
     buildFeatures { compose = true }  // Enable Jetpack Compose
     // Java 17 compatibility
     compileOptions {
@@ -51,7 +55,7 @@ android {
     // 📦 Core app settings: ID, SDK versions, versioning, and test runner.
     defaultConfig {
         applicationId = "com.prime.toolkit"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 37
         versionCode = 1
         versionName = "3.0.0-dev"
