@@ -4,7 +4,6 @@ package com.zs.compose.foundation.style
 
 import androidx.annotation.FloatRange
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.style.Breadth
 import androidx.compose.foundation.style.CommonStyleScope
 import androidx.compose.foundation.style.ExperimentalFoundationStyleApi
@@ -22,18 +21,66 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isUnspecified
+import androidx.compose.foundation.layout.PaddingValues as Padding
 import androidx.compose.ui.geometry.lerp as lerpOffset
+import androidx.compose.ui.unit.LayoutDirection as Direction
 import androidx.compose.ui.unit.lerp as lerpDp
 import androidx.compose.ui.unit.lerp as lerpDpOffset
+
+
+/**
+ * Lazily interpolates padding on demand.
+ *
+ * Individual edges are resolved using the current layout direction,
+ * allowing directional paddings to animate correctly.
+ */
+private class LerpedPaddingValues(private val from: Padding, private val to: Padding, private val fraction: Float) : Padding {
+
+    //Resolve and interpolate the effective left padding.
+    override fun calculateLeftPadding(direction: Direction): Dp =
+        lerpDp(from.calculateLeftPadding(direction), to.calculateLeftPadding(direction), fraction)
+
+    override fun calculateTopPadding(): Dp =
+        lerpDp(from.calculateTopPadding(), to.calculateTopPadding(), fraction)
+
+    override fun calculateRightPadding(direction: Direction): Dp =
+        // Resolve and interpolate the effective right padding.
+        lerpDp(from.calculateRightPadding(direction), to.calculateRightPadding(direction), fraction)
+
+    override fun calculateBottomPadding(): Dp =
+        lerpDp(from.calculateBottomPadding(), to.calculateBottomPadding(), fraction)
+
+    // Value-based equality for stability and debugging.
+    override fun equals(other: Any?): Boolean {
+        return other is LerpedPaddingValues &&
+                from == other.from &&
+                to == other.to &&
+                fraction == other.fraction
+    }
+
+    override fun hashCode(): Int =
+        (from.hashCode() * 31 + to.hashCode()) * 31 + fraction.hashCode()
+}
+
+/**
+ * Interpolates between two [Padding] values.
+ */
+private fun lerpPadding(start: Padding, stop: Padding, fraction: Float): Padding {
+    return when {
+        fraction <= 0f -> start // Fast path: fully at start state.
+        fraction >= 1f -> stop  // Fast path: fully at end state.
+        else -> LerpedPaddingValues(start, stop, fraction)
+    }
+}
 
 internal val StyleBackgroundProperty = stylePropertyOf("background") { Fill.None }
 internal val StyleForegroundProperty = stylePropertyOf("foreground") { Fill.None }
 internal val StyleShapeProperty = stylePropertyOf("shape") { RectangleShape }
-internal val StylePaddingProperty = stylePropertyOf("padding") { PaddingValues.Zero }
+
+internal val StylePaddingProperty = stylePropertyOf("padding", ::lerpPadding) { Padding.Zero }
 internal val StyleElevationProperty = stylePropertyOf("elevation") { 0.dp }
 internal val StyleBlurRadiusProperty = stylePropertyOf("blur_radius") { 0f }
-internal val StyleBorderProperty =
-    stylePropertyOf("border") { BorderStroke(0.dp, Color.Unspecified) }
+internal val StyleBorderProperty = stylePropertyOf("border") { BorderStroke(0.dp, Color.Unspecified) }
 internal val StyleScaleProperty = stylePropertyOf("scale", ::lerpOffset) { Offset(1f, 1f) }
 internal val StyleTranslateProperty = stylePropertyOf("translate", ::lerpDpOffset) { DpOffset.Zero }
 internal val StyleNoiseProperty = stylePropertyOf("noise") { 0f }
@@ -78,17 +125,17 @@ fun CommonStyleScope.shape(shape: Shape) =
     StyleShapeProperty.provide(shape)
 
 /** Sets the padding to [values]. */
-fun CommonStyleScope.padding(values: PaddingValues) =
+fun CommonStyleScope.padding(values: Padding) =
     StylePaddingProperty.provide(values)
 
 fun CommonStyleScope.padding(all: Dp) =
-    StylePaddingProperty.provide(PaddingValues(all))
+    StylePaddingProperty.provide(Padding(all))
 
 fun CommonStyleScope.padding(start: Dp, top: Dp, end: Dp, bottom: Dp) =
-    StylePaddingProperty.provide(PaddingValues(start, top, end, bottom))
+    StylePaddingProperty.provide(Padding(start, top, end, bottom))
 
 fun CommonStyleScope.padding(horizontal: Dp, vertical: Dp) =
-    StylePaddingProperty.provide(PaddingValues(horizontal, vertical))
+    StylePaddingProperty.provide(Padding(horizontal, vertical))
 
 /** Sets the elevation to [elevation]. */
 fun CommonStyleScope.elevation(elevation: Dp) =
@@ -262,5 +309,3 @@ fun CommonStyleScope.fillMaxSize(
     fillMaxWidth(width)
     fillMaxHeight(height)
 }
-
-

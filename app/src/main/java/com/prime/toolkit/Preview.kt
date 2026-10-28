@@ -27,6 +27,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -57,11 +58,13 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.zs.compose.foundation.JetBlack
 import com.zs.compose.foundation.MetroGreen
+import com.zs.compose.foundation.OrientRed
 import com.zs.compose.foundation.Slot
 import com.zs.compose.foundation.style.styleable
 import com.zs.compose.foundation.style.background
 import com.zs.compose.foundation.style.border
 import com.zs.compose.foundation.style.elevation
+import com.zs.compose.foundation.style.minSize
 import com.zs.compose.foundation.style.noise
 import com.zs.compose.foundation.style.padding
 import com.zs.compose.foundation.style.scale
@@ -122,7 +125,6 @@ fun PreviewDecorator(modifier: Modifier = Modifier) {
 val SelectedStatekey = StyleStateKey(defaultValue = false)
 
 
-
 // 2. Add an extension property to easily get/set the state on MutableStyleState
 var StyleState.selected: Boolean
     get() = this[SelectedStatekey]
@@ -138,6 +140,7 @@ inline fun StyleScope.selected(crossinline block: StyleScope.() -> Unit) {
         block()
     }
 }
+
 @Composable
 fun PreviewStyllable(modifier: Modifier = Modifier) {
     var selected by remember { mutableStateOf(false) }
@@ -153,40 +156,65 @@ fun PreviewStyllable(modifier: Modifier = Modifier) {
     ) {
         Slot(
             modifier = Modifier
-               //
-
                 .styleable(
                     interactions = interactionSource,
                 ) {
-                    Log.d(TAG, "PreviewStyllable: defult")
-                    background(Color.JetBlack)
-                    padding(5.dp)
-                    size(120.dp, 63.dp)
+                    Log.d(TAG, "PreviewSyllable: default")
+                    background(Color.OrientRed)
+                    size(100.dp, 48.dp)
                     noise(0.4f)
-                 //   padding(PaddingValues(20.dp))
+                    //   padding(PaddingValues(20.dp))
                     shape(RoundedCornerShape(10))
+                    border(BorderStroke(1.dp, Color.White))
                     elevation(5.dp)
-                    pressed {
-                            size(120.dp, 64.dp)
-                           // background(Color.Red)
-                            //   padding(PaddingValues(10.dp))
-                            //scale(1.3f)
-                            //noise(1f)
-                           // translate(0.dp, -25.dp)
-                            //translate(-4)
-                             shape(RoundedCornerShape(50))
-                             //border(BorderStroke(2.dp, Color.White))
-                            //elevation(20.dp)
+                    animate(tween(500)) {
+                        pressed {
+                            padding(5.dp)
+                            //scale(1.25f)
+                            noise(1f)
+                            border(BorderStroke(2.dp, Color.White))
+                            elevation(20.dp)
                         }
+                    }
                 }
                 .clickable(interactionSource = interactionSource) {
                     selected = !selected
                 }
-               // .size(120.dp, 64.dp)
+        ) {
+            Label(text = "Button2")
+        }
+
+        Slot(
+            modifier = Modifier
+                .styleable(
+                    interactions = interactionSource,
+                ) {
+                    Log.d(TAG, "PreviewStyllable: defult")
+                    background(Color.OrientRed)
+                    size(100.dp, 48.dp)
+
+                    noise(0.4f)
+                    //   padding(PaddingValues(20.dp))
+                    shape(RoundedCornerShape(10))
+                    border(BorderStroke(1.dp, Color.White))
+                    elevation(5.dp)
+                    animate(tween(500)) {
+                        pressed {
+                            padding(5.dp)
+                            //scale(1.25f)
+                            noise(1f)
+                            border(BorderStroke(2.dp, Color.White))
+                            elevation(20.dp)
+                        }
+                    }
+                }
+                .clickable(interactionSource = interactionSource) {
+                    selected = !selected
+                }
 
 
         ) {
-            Label(text = "Button")
+            Label(text = "Button2")
         }
     }
 }
