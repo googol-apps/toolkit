@@ -63,8 +63,10 @@ import com.zs.compose.foundation.style.background
 import com.zs.compose.foundation.style.border
 import com.zs.compose.foundation.style.elevation
 import com.zs.compose.foundation.style.noise
+import com.zs.compose.foundation.style.padding
 import com.zs.compose.foundation.style.scale
 import com.zs.compose.foundation.style.shape
+import com.zs.compose.foundation.style.size
 import com.zs.compose.foundation.style.translate
 import com.zs.compose.theme.ExperimentalThemeApi
 import com.zs.compose.theme.LocalRippleConfiguration
@@ -151,35 +153,37 @@ fun PreviewStyllable(modifier: Modifier = Modifier) {
     ) {
         Slot(
             modifier = Modifier
-                .size(120.dp, 64.dp)
+               //
+
                 .styleable(
                     interactions = interactionSource,
                 ) {
                     Log.d(TAG, "PreviewStyllable: defult")
                     background(Color.JetBlack)
+                    padding(5.dp)
+                    size(120.dp, 63.dp)
                     noise(0.4f)
                  //   padding(PaddingValues(20.dp))
                     shape(RoundedCornerShape(10))
                     elevation(5.dp)
-
-                        animate(tween(500), tween(500)) {
-                            pressed {
+                    pressed {
+                            size(120.dp, 64.dp)
                            // background(Color.Red)
                             //   padding(PaddingValues(10.dp))
-                            scale(1.3f)
-                            noise(1f)
+                            //scale(1.3f)
+                            //noise(1f)
                            // translate(0.dp, -25.dp)
                             //translate(-4)
                              shape(RoundedCornerShape(50))
-                             border(BorderStroke(2.dp, Color.White))
-                            elevation(20.dp)
+                             //border(BorderStroke(2.dp, Color.White))
+                            //elevation(20.dp)
                         }
-                    }
                 }
-                .graphicsLayer()
                 .clickable(interactionSource = interactionSource) {
                     selected = !selected
                 }
+               // .size(120.dp, 64.dp)
+
 
         ) {
             Label(text = "Button")

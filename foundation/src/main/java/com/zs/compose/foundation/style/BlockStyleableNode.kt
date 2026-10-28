@@ -3,6 +3,7 @@ package com.zs.compose.foundation.style
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.style.Breadth
 import androidx.compose.foundation.style.ExperimentalFoundationStyleApi
 import androidx.compose.foundation.style.Fill
 import androidx.compose.foundation.style.MutableStyleState
@@ -39,6 +40,7 @@ import androidx.compose.ui.semantics.shape
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
@@ -148,8 +150,15 @@ internal class BlockStyleableNode(
     private var resolver: StyleResolver? = null
     private var outline: Outline? = null
 
-    // properties
+    // dimes
     private var padding = PaddingValues.Zero
+    private var width = Breadth.None
+    private var height = Breadth.None
+    private var minSize = DpSize.Zero
+    private var maxSize = DpSize.Unspecified
+
+    // properties
+
     private var shape = RectangleShape
     private var background: Fill = Fill.None
     private var foreground: Fill = Fill.None
@@ -159,6 +168,7 @@ internal class BlockStyleableNode(
     private var scale: Offset = Offset(1f, 1f) // offset is the container for scale.
     private var translate = DpOffset.Zero // offset is the container for tranlate.
     private var noise = 0f // between 0 and 1, 0 off and 1 full intensity.
+
 
     /**
      * Read block for [observeReads]. Any state read inside it triggers
@@ -171,18 +181,23 @@ internal class BlockStyleableNode(
         val newBackground = resolver[StyleBackgroundProperty]
         val newForeground = resolver[StyleForegroundProperty]
         val newShape = resolver[StyleShapeProperty]
-        val newPadding = resolver[StylePaddingProperty]
         val newElevation = resolver[StyleElevationProperty]
         val newBorder = resolver[StyleBorderProperty]
         val newBlur = resolver[StyleBlurRadiusProperty]
         val newScale = resolver[StyleScaleProperty]
         val newTranslate = resolver[StyleTranslateProperty]
         val newNoise = resolver[StyleNoiseProperty]
+        val newPadding = resolver[StylePaddingProperty]
+        val newWidth = resolver[StyleWidthProperty]
+        val newHeight = resolver[StyleHeightProperty]
+        val newMinSize = resolver[StyleMinSizeProperty]
+        val newMaxSize = resolver[StyleMaxSizeProperty]
 
         // Phase 2: compare against the stored values and collect the effects needed.
         var flags = 0
         if (shape != newShape) flags = flags or DIRTY_SEMANTICS // draw: the fills follow the shape
-        if (padding != newPadding) flags = flags or DIRTY_MEASURE
+        if (padding != newPadding || width != newWidth || height != newHeight || minSize != newMinSize || maxSize != newMaxSize)
+            flags = flags or DIRTY_MEASURE
         if (elevation != newElevation || newScale != scale || newTranslate != translate) flags = flags or DIRTY_LAYER
         if (background != newBackground || foreground != newForeground || border != newBorder || noise != newNoise)
             flags = flags or DIRTY_DRAW
@@ -194,12 +209,16 @@ internal class BlockStyleableNode(
         // Commit the new values.
         background = newBackground
         foreground = newForeground
-        padding = newPadding
         elevation = newElevation
         border = newBorder
         scale = newScale
         translate = newTranslate
         noise = newNoise
+        padding = newPadding
+        height = newHeight
+        width = newWidth
+        minSize = newMinSize
+        maxSize = newMaxSize
 
         if (shape != newShape) {
             shape = newShape
@@ -281,8 +300,7 @@ internal class BlockStyleableNode(
         with(requireDensity()) {
 
             // Pixel-backed layer properties.
-            layer.shadowElevation =
-                elevation.takeOrElse { 0.dp }.toPx()
+            layer.shadowElevation = elevation.toPx()
 
             layer.translationX = translate.x.toPx()
             layer.translationY = translate.y.toPx()
@@ -422,7 +440,7 @@ internal class BlockStyleableNode(
 
     // draw
     override fun ContentDrawScope.draw() {
-        Log.d(TAG, "draw: ")
+        Log.d(TAG, "draw: $dimensions size: $size")
         // CHECK: confirm the color still animates in a minified release build. R8 shouldn't remove
         // a snapshot state getter, but I haven't verified that.
         @Suppress("UNUSED_VARIABLE")
@@ -472,8 +490,7 @@ internal class BlockStyleableNode(
 
     // here update padding, size, default size. etc.
     override fun MeasureScope.measure(measurable: Measurable, constraints: Constraints): MeasureResult {
-        Log.d(TAG, "measure: ")
-        // Resolve and validate content padding.
+        // 1. Resolve and validate padding.
         val lPadding = padding.calculateLeftPadding(layoutDirection)
         val tPadding = padding.calculateTopPadding()
         val rPadding = padding.calculateRightPadding(layoutDirection)
@@ -483,35 +500,43 @@ internal class BlockStyleableNode(
             "Padding must be non-negative"
         }
 
-        // Convert padding to pixels and derive the total horizontal/vertical space
-        // reserved around the child.
-        val roundedLeftPadding = lPadding.roundToPx()
-        val horizontal = roundedLeftPadding + rPadding.roundToPx()
+        val left = lPadding.roundToPx()
+        val top = tPadding.roundToPx()
+        val horizontal = left + rPadding.roundToPx()
+        val vertical = top + bPadding.roundToPx()
 
-        val roundedTopPadding = tPadding.roundToPx()
-        val vertical = roundedTopPadding + bPadding.roundToPx()
+        // 2. Space left for the child after padding (offset also clamps at zero).
+        val inner = constraints.offset(-horizontal, -vertical)
 
-        // Measure the child within the remaining space after padding is applied.
-        val placeable = measurable.measure(constraints.offset(-horizontal, -vertical))
+        // 3. Apply min/max/width/height to that space, one axis at a time.
+        // The result's minWidth/maxWidth fields carry that axis's min/max.
+        val w = resolveAxis(inner.minWidth, inner.maxWidth, minSize.width, maxSize.width, width)
+        val h = resolveAxis(inner.minHeight, inner.maxHeight, minSize.height, maxSize.height, height)
 
-        // Compute the final size including padding and constrain it to the
-        // incoming parent constraints.
-        val width = constraints.constrainWidth(placeable.width + horizontal)
-        val height = constraints.constrainHeight(placeable.height + vertical)
+        // 4. Measure the child.
+        val placeable = measurable.measure(
+            Constraints(
+                minWidth = w.minWidth,
+                maxWidth = w.maxWidth,
+                minHeight = h.minWidth, // height's min, carried in the width slots
+                maxHeight = h.maxWidth, // height's max, carried in the width slots
+            )
+        )
 
-        // Sync the inputs the cached outline depends on (size, density, layout direction).
-        // If any of them changed, the outline is stale, so invalidate it and let it be
-        // rebuilt.
+        // 5. Final size includes padding, limited by the parent.
+        val layoutWidth = constraints.constrainWidth(placeable.width + horizontal)
+        val layoutHeight = constraints.constrainHeight(placeable.height + vertical)
+
+        // 6. Invalidate the cached outline only when the child's size changed.
         val size = Size(placeable.width.toFloat(), placeable.height.toFloat())
         if (size != dimensions) {
             dimensions = size
             invalidateOutline()
         }
 
-        // Position the child and attach the reusable graphics layer.
-        return layout(width, height) {
-            Log.d(TAG, "placement: ")
-            placeable.placeWithLayer(roundedLeftPadding, roundedTopPadding, layer = layer)
+        // 7. Place the child at the padding offset on the reusable layer.
+        return layout(layoutWidth, layoutHeight) {
+            placeable.placeWithLayer(left, top, layer = layer)
         }
     }
 }
