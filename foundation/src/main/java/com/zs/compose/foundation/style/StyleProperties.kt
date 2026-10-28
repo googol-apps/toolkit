@@ -280,7 +280,7 @@ fun CommonStyleScope.size(width: Dp, height: Dp) {
  *
  * @param fraction portion of the available width, from `0f` to `1f`.
  */
-fun CommonStyleScope.fillMaxWidth(@FloatRange(0.0, 1.0) fraction: Float = 1.0f) =
+fun CommonStyleScope.fillWidth(@FloatRange(0.0, 1.0) fraction: Float = 1.0f) =
     StyleWidthProperty.provide(Breadth(fraction))
 
 /**
@@ -291,21 +291,21 @@ fun CommonStyleScope.fillMaxWidth(@FloatRange(0.0, 1.0) fraction: Float = 1.0f) 
  *
  * @param fraction portion of the available height, from `0f` to `1f`.
  */
-fun CommonStyleScope.fillMaxHeight(@FloatRange(0.0, 1.0) fraction: Float = 1.0f) =
+fun CommonStyleScope.fillHeight(@FloatRange(0.0, 1.0) fraction: Float = 1.0f) =
     StyleHeightProperty.provide(Breadth(fraction))
 
 /**
  * Makes the content fill a fraction of the available width and height.
  *
- * Equivalent to calling [fillMaxWidth] and [fillMaxHeight].
+ * Equivalent to calling [fillWidth] and [fillHeight].
  *
  * @param width portion of the available width, from `0f` to `1f`.
  * @param height portion of the available height, from `0f` to `1f`.
  */
-fun CommonStyleScope.fillMaxSize(
+fun CommonStyleScope.fillSize(
     @FloatRange(0.0, 1.0) width: Float = 1.0f,
     @FloatRange(0.0, 1.0) height: Float = 1.0f,
 ) {
-    fillMaxWidth(width)
-    fillMaxHeight(height)
+    fillWidth(width)
+    fillHeight(height)
 }

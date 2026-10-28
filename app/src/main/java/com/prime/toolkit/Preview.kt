@@ -27,7 +27,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -40,7 +39,9 @@ import androidx.compose.foundation.style.StyleScope
 import androidx.compose.foundation.style.StyleState
 import androidx.compose.foundation.style.StyleStateKey
 import androidx.compose.foundation.style.animate
+import androidx.compose.foundation.style.disabled
 import androidx.compose.foundation.style.pressed
+import androidx.compose.foundation.style.then
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -50,27 +51,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
-import com.zs.compose.foundation.JetBlack
-import com.zs.compose.foundation.MetroGreen
 import com.zs.compose.foundation.OrientRed
 import com.zs.compose.foundation.Slot
-import com.zs.compose.foundation.style.styleable
+import com.zs.compose.foundation.style.Style
 import com.zs.compose.foundation.style.background
 import com.zs.compose.foundation.style.border
 import com.zs.compose.foundation.style.elevation
-import com.zs.compose.foundation.style.minSize
 import com.zs.compose.foundation.style.noise
 import com.zs.compose.foundation.style.padding
-import com.zs.compose.foundation.style.scale
 import com.zs.compose.foundation.style.shape
 import com.zs.compose.foundation.style.size
-import com.zs.compose.foundation.style.translate
+import com.zs.compose.foundation.style.styleable
 import com.zs.compose.theme.ExperimentalThemeApi
 import com.zs.compose.theme.LocalRippleConfiguration
 import com.zs.compose.theme.RippleConfiguration
@@ -184,35 +180,39 @@ fun PreviewStyllable(modifier: Modifier = Modifier) {
             Label(text = "Button2")
         }
 
+        val style: Style ={
+            Log.d(TAG, "PreviewStyllable: defult")
+            background(Color.OrientRed)
+            size(100.dp, 48.dp)
+
+            noise(0.4f)
+            //   padding(PaddingValues(20.dp))
+            shape(RoundedCornerShape(10))
+            border(BorderStroke(1.dp, Color.White))
+            elevation(5.dp)
+            animate(tween(500)) {
+                pressed {
+                    padding(5.dp)
+                    //scale(1.25f)
+                    noise(1f)
+                    border(BorderStroke(2.dp, Color.White))
+                    elevation(20.dp)
+                }
+            }
+        }
+
         Slot(
             modifier = Modifier
                 .styleable(
                     interactions = interactionSource,
-                ) {
-                    Log.d(TAG, "PreviewStyllable: defult")
-                    background(Color.OrientRed)
-                    size(100.dp, 48.dp)
-
-                    noise(0.4f)
-                    //   padding(PaddingValues(20.dp))
-                    shape(RoundedCornerShape(10))
-                    border(BorderStroke(1.dp, Color.White))
-                    elevation(5.dp)
-                    animate(tween(500)) {
-                        pressed {
-                            padding(5.dp)
-                            //scale(1.25f)
-                            noise(1f)
-                            border(BorderStroke(2.dp, Color.White))
-                            elevation(20.dp)
-                        }
+                    style =  style then {
+                        size(30.dp, 48.dp)
+                        background(Color.Blue)
                     }
-                }
+                )
                 .clickable(interactionSource = interactionSource) {
                     selected = !selected
                 }
-
-
         ) {
             Label(text = "Button2")
         }
