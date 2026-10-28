@@ -1,5 +1,7 @@
 package com.zs.compose.foundation.style
 
+import android.content.Context
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
@@ -29,6 +31,30 @@ internal fun ShaderBrush(@DrawableRes id: Int): ShaderBrush {
     // Determine the appropriate image source based on the ImageBrush type
     // Decode the resource into a Bitmap for resource-based ImageBrushes.
     val resources = node.currentValueOf(LocalContext).resources
+    val bmp: Bitmap
+    val time = measureNanoTime {
+        // Decode the resource, disabling scaling for optimal performance.
+        bmp = BitmapFactory.decodeResource(resources, id, BitmapFactory.Options().apply {
+            inScaled = false
+//            inTargetDensity = inDensity
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                this.inPreferredConfig = Bitmap.Config.HARDWARE
+//            }
+        })
+    }
+    Log.d(TAG, "create: (width=${bmp.width}, height=${bmp.height}, time=$time")
+    // Convert the decoded Bitmap to an ImageBitmap for use in the ShaderBrush.
+    val img = bmp.asImageBitmap()
+    // Create and return a ShaderBrush using the ImageShader for repeating the image:
+    // TODO - Experiment with different tileModes.
+    val shader = ImageShader(img, Repeated, Repeated)
+    return ShaderBrush(shader)
+}
+
+internal fun ShaderBrush(context: Resources, @DrawableRes id: Int): ShaderBrush {
+    // Determine the appropriate image source based on the ImageBrush type
+    // Decode the resource into a Bitmap for resource-based ImageBrushes.
+    val resources = context
     val bmp: Bitmap
     val time = measureNanoTime {
         // Decode the resource, disabling scaling for optimal performance.

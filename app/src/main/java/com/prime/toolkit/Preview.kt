@@ -21,6 +21,7 @@
 package com.prime.toolkit
 
 import android.util.Log
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -37,6 +38,7 @@ import androidx.compose.foundation.style.MutableStyleState
 import androidx.compose.foundation.style.StyleScope
 import androidx.compose.foundation.style.StyleState
 import androidx.compose.foundation.style.StyleStateKey
+import androidx.compose.foundation.style.animate
 import androidx.compose.foundation.style.pressed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -53,12 +55,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
+import com.zs.compose.foundation.JetBlack
+import com.zs.compose.foundation.MetroGreen
 import com.zs.compose.foundation.Slot
 import com.zs.compose.foundation.style.styleable
 import com.zs.compose.foundation.style.background
 import com.zs.compose.foundation.style.border
 import com.zs.compose.foundation.style.elevation
+import com.zs.compose.foundation.style.noise
+import com.zs.compose.foundation.style.scale
 import com.zs.compose.foundation.style.shape
+import com.zs.compose.foundation.style.translate
 import com.zs.compose.theme.ExperimentalThemeApi
 import com.zs.compose.theme.LocalRippleConfiguration
 import com.zs.compose.theme.RippleConfiguration
@@ -144,22 +151,29 @@ fun PreviewStyllable(modifier: Modifier = Modifier) {
     ) {
         Slot(
             modifier = Modifier
-
+                .size(120.dp, 64.dp)
                 .styleable(
                     interactions = interactionSource,
                 ) {
                     Log.d(TAG, "PreviewStyllable: defult")
-                    background(Color.Green)
+                    background(Color.JetBlack)
+                    noise(0.4f)
                  //   padding(PaddingValues(20.dp))
-                    shape(RoundedCornerShape(1))
+                    shape(RoundedCornerShape(10))
                     elevation(5.dp)
-                    pressed {
-                        background(Color.Red)
-                        //   padding(PaddingValues(10.dp))
-                        shape(RoundedCornerShape(50))
-                        border(BorderStroke(2.dp, Color.White))
-                        elevation(20.dp)
 
+                        animate(tween(500), tween(500)) {
+                            pressed {
+                           // background(Color.Red)
+                            //   padding(PaddingValues(10.dp))
+                            scale(1.3f)
+                            noise(1f)
+                           // translate(0.dp, -25.dp)
+                            //translate(-4)
+                             shape(RoundedCornerShape(50))
+                             border(BorderStroke(2.dp, Color.White))
+                            elevation(20.dp)
+                        }
                     }
                 }
                 .graphicsLayer()

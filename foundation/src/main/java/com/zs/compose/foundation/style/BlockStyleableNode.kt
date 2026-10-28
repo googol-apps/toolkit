@@ -12,8 +12,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.isUnspecified
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.ShaderBrush
@@ -32,14 +34,17 @@ import androidx.compose.ui.node.observeReads
 import androidx.compose.ui.node.requireDensity
 import androidx.compose.ui.node.requireGraphicsContext
 import androidx.compose.ui.node.requireLayoutDirection
+import androidx.compose.ui.node.requireView
 import androidx.compose.ui.semantics.shape
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
 import androidx.compose.ui.unit.takeOrElse
+import com.zs.compose.foundation.R
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.interaction.InteractionSource as Interactions
 import androidx.compose.ui.node.DelegatingNode as Node
@@ -150,6 +155,10 @@ internal class BlockStyleableNode(
     private var foreground: Fill = Fill.None
     private var elevation: Dp = Dp.Unspecified
     private var border: BorderStroke? = null
+    private var blur: Float = 0f
+    private var scale: Offset = Offset(1f, 1f) // offset is the container for scale.
+    private var translate = DpOffset.Zero // offset is the container for tranlate.
+    private var noise = 0f // between 0 and 1, 0 off and 1 full intensity.
 
     /**
      * Read block for [observeReads]. Any state read inside it triggers
@@ -165,14 +174,22 @@ internal class BlockStyleableNode(
         val newPadding = resolver[StylePaddingProperty]
         val newElevation = resolver[StyleElevationProperty]
         val newBorder = resolver[StyleBorderProperty]
+        val newBlur = resolver[StyleBlurRadiusProperty]
+        val newScale = resolver[StyleScaleProperty]
+        val newTranslate = resolver[StyleTranslateProperty]
+        val newNoise = resolver[StyleNoiseProperty]
 
         // Phase 2: compare against the stored values and collect the effects needed.
         var flags = 0
-        if (background != newBackground || foreground != newForeground || border != newBorder) flags =
-            flags or DIRTY_DRAW
         if (shape != newShape) flags = flags or DIRTY_SEMANTICS // draw: the fills follow the shape
         if (padding != newPadding) flags = flags or DIRTY_MEASURE
-        if (elevation != newElevation) flags = flags or DIRTY_LAYER
+        if (elevation != newElevation || newScale != scale || newTranslate != translate) flags = flags or DIRTY_LAYER
+        if (background != newBackground || foreground != newForeground || border != newBorder || noise != newNoise)
+            flags = flags or DIRTY_DRAW
+
+        // clean resources
+        if (newNoise == 0f)
+            cachedNoiseEffectBrush = null
 
         // Commit the new values.
         background = newBackground
@@ -180,6 +197,10 @@ internal class BlockStyleableNode(
         padding = newPadding
         elevation = newElevation
         border = newBorder
+        scale = newScale
+        translate = newTranslate
+        noise = newNoise
+
         if (shape != newShape) {
             shape = newShape
             invalidateOutline()
@@ -249,7 +270,23 @@ internal class BlockStyleableNode(
      */
     private fun invalidateLayer() {
         Log.d(TAG, "invalidateLayer: ")
-        layer.shadowElevation = with(requireDensity()) { elevation.takeOrElse() { 0.dp }.toPx() }
+
+        // Transform-related properties.
+        layer.scaleX = scale.x
+        layer.scaleY = scale.y
+
+        // Non-rectangular shapes require layer clipping.
+        layer.clip = shape != RectangleShape
+
+        with(requireDensity()) {
+
+            // Pixel-backed layer properties.
+            layer.shadowElevation =
+                elevation.takeOrElse { 0.dp }.toPx()
+
+            layer.translationX = translate.x.toPx()
+            layer.translationY = translate.y.toPx()
+        }
     }
 
     override fun onLayoutDirectionChange() = invalidateOutline()
@@ -379,6 +416,8 @@ internal class BlockStyleableNode(
         // size above already unspecified the setter returns early. That is what keeps it from
         // touching the layer that was just released. Do not move this line above the size reset.
         outline = null // clear outline as well.
+        cachedNoiseEffectBrush = null
+        cachedBorderStroke = null
     }
 
     // draw
@@ -395,6 +434,17 @@ internal class BlockStyleableNode(
             is Fill.Color -> drawRect(bg.color)
             is Fill.Brush -> drawRect(bg.brush)
             else -> {}
+        }
+
+        // Apply Texture Effects
+        // If noise is enabled, we overlay the noise texture using the Overlay blend mode.
+        // This adds fine-grained grain/texture to both the background and the content,
+        // increasing visual depth without relying on high-resolution assets.
+        if (noise != 0f) {
+            val brush = cachedNoiseEffectBrush ?: ShaderBrush(requireView().resources, R.drawable.noise)
+            cachedNoiseEffectBrush = brush // cache
+            Log.d(TAG, "draw - noise: $noise")
+            drawRect(brush, alpha = noise, blendMode = BlendMode.Hardlight)
         }
 
         // Content: the element's own drawing, in between the two fills.
