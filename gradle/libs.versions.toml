@@ -1,0 +1,31 @@
+# -----------------------------------------------------------------------------
+# VERSIONS – Centralized version catalog
+#           Only versions that are required globally or shared across multiple dependencies
+#           are declared here. For single-use cases, inline values are preferred.
+# -----------------------------------------------------------------------------
+[versions]
+agp = "9.5.0"
+kotlin = "2.5.0-Beta2"
+coil = "3.6.3"
+
+
+# -----------------------------------------------------------------------------
+# PLUGINS
+# -----------------------------------------------------------------------------
+[plugins]
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" } # JetBrains Compose Compiler
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }             # For app modules
+maven-publish = { id = "maven-publish", version = "0.0.0" }             # Publishing plugin (placeholder)
+
+# -----------------------------------------------------------------------------
+# LIBRARIES
+# -----------------------------------------------------------------------------
+[libraries]
+# =============================== COMPOSE   =================================
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.13.0" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom-beta", version = "2026.10.01" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
