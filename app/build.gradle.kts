@@ -109,4 +109,6 @@ dependencies {
     implementation(project(":theme"))                    // Custom theme module
     implementation(project(":foundation"))               // Foundation utilities
     implementation(project(":preferences"))              // Preferences module
+
+    implementation("androidx.datastore:datastore-preferences:1.3.0")
 }

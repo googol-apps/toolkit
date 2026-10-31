@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+option java_package = "com.zs.datastore.preferences";
+option java_multiple_files = true;
+
+message UserPreferences {
+  // filter for showing / hiding completed tasks
+  bool show_completed = 1;
+}
