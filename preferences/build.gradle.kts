@@ -89,9 +89,9 @@ afterEvaluate {
             // Create a Maven publication named "release"
             create<MavenPublication>("release") {
                 from(components["release"])        // Use release build variant
-                groupId = "com.zs"                 // Maven group ID
+                groupId = "com.github.googol-apps"                 // Maven group ID
                 artifactId = "preferences"         // Artifact ID
-                version = "3.0.0-dev01"            // Version tag
+                version = "3.12.2-dev"            // Version tag
             }
         }
     }

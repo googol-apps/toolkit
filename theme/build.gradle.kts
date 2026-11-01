@@ -94,9 +94,9 @@ afterEvaluate {
             // Create a Maven publication named "release"
             create<MavenPublication>("release") {
                 from(components["release"])
-                groupId = "com.zs.compose"
+                groupId = "com.github.googol-apps"
                 artifactId = "theme"
-                version = "3.0.0-dev01"
+                version = "3.12.2-dev"
             }
         }
     }
