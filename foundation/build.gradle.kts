@@ -38,7 +38,7 @@ kotlin {
 // 📱 Android library setup: namespace, SDK levels, build types, and publishing.
 android {
     namespace = "com.zs.compose.foundation"
-    compileSdk = 37
+    compileSdk { version = release(37) { minorApiLevel = 2 } }
     buildFeatures { compose = true }  // Enable Jetpack Compose
 
     // Java 17 compatibility
@@ -48,7 +48,7 @@ android {
     }
 
     defaultConfig {
-        minSdk = 23
+        minSdk = 24
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

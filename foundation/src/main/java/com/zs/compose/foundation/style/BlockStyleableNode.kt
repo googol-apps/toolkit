@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
+import androidx.compose.ui.unit.takeOrElse
 import com.zs.compose.foundation.R
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.interaction.InteractionSource as Interactions
@@ -299,7 +300,7 @@ internal class BlockStyleableNode(
         with(requireDensity()) {
 
             // Pixel-backed layer properties.
-            layer.shadowElevation = elevation.toPx()
+            layer.shadowElevation = elevation.takeOrElse { 0.dp }.toPx()
 
             layer.translationX = translate.x.toPx()
             layer.translationY = translate.y.toPx()

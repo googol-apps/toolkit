@@ -201,7 +201,7 @@ private class StyleableElement(
         node.outlinePathEffect = outlinePathEffect
 
         //
-        node.elevation = node.elevation
+        node.elevation = elevation
         //
         node.scaleX = scaleX
         node.scaleY = scaleY

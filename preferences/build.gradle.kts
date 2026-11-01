@@ -37,7 +37,7 @@ kotlin {
 // 📱 Android library setup: namespace, SDK levels, build types, and publishing.
 android {
     namespace = "com.zs.preferences"
-    compileSdk = 37
+    compileSdk { version = release(37) { minorApiLevel = 2 } }
 
     // Java 17 compatibility
     compileOptions {
@@ -46,7 +46,7 @@ android {
     }
 
     defaultConfig {
-        minSdk = 23
+        minSdk = 24
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

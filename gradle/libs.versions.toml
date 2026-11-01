@@ -6,7 +6,7 @@
 [versions]
 coilNetworkOkhttp = "3.3.0"
 kotlin = "2.4.21"          # Kotlin language version
-agp = "9.4.1"              # Android Gradle Plugin
+agp = "9.5.0"              # Android Gradle Plugin
 material_icons = "1.7.8"   # Jetpack Compose Material Icons
 
 

@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.offset
+import androidx.compose.ui.unit.takeOrElse
 import com.zs.compose.foundation.R
 import com.zs.compose.foundation.requirePrecondition
 import com.zs.compose.foundation.unit.EdgeInsets
@@ -223,7 +224,7 @@ internal class DecoratorNode(
 
         // Configure graphics layer
         graphicsLayer.setOutline(outline)
-        graphicsLayer.shadowElevation = elevation.toPx()
+        graphicsLayer.shadowElevation = elevation.takeOrElse { 0.dp }.toPx()
         graphicsLayer.clip = true
         graphicsLayer.scaleX = scaleX
         graphicsLayer.scaleY = scaleY
