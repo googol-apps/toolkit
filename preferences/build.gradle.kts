@@ -9,7 +9,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.android.library)        // Android Library
     id(libs.plugins.maven.publish.get().pluginId) // Maven Publishing
-    alias(libs.plugins.google.protobuf)
 }
 
 // -----------------------------------------------------------------------------
@@ -63,37 +62,7 @@ android {
 // -----------------------------------------------------------------------------
 // External libraries and module dependencies used by this library.
 dependencies {
-    implementation(libs.androidx.datastore.core)
-    implementation(libs.protobuf.javalite)
-}
-
-// -----------------------------------------------------------------------------
-// PROTOCOL BUFFERS (PROTOBUF)
-// -----------------------------------------------------------------------------
-// 🧬 Generate Kotlin classes from .proto schema definitions.
-// Used by Proto DataStore for strongly-typed preferences storage.
-protobuf {
-
-    // -------------------------------------------------------------------------
-    // Protobuf Compiler
-    // -------------------------------------------------------------------------
-    // 🔧 Version of protoc used to generate source code.
-    protoc {
-        artifact = "com.google.protobuf:protoc:4.32.1"
-    }
-
-    // -------------------------------------------------------------------------
-    // Code Generation
-    // -------------------------------------------------------------------------
-    // ⚡ Generate Kotlin sources for all Proto definitions.
-    generateProtoTasks {
-        all().forEach { task ->
-            task.builtins {
-                // 📝 Generate message classes.
-                create("java") { option("lite") }
-            }
-        }
-    }
+    implementation(libs.androidx.datastore.preferences)
 }
 
 // -----------------------------------------------------------------------------
