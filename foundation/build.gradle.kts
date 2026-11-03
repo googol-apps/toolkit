@@ -62,7 +62,9 @@ android {
 // -----------------------------------------------------------------------------
 // External libraries and module dependencies used by this library.
 dependencies {
-
+    implementation(platform(libs.androidx.compose.bom)) // Compose BOM for version alignment
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.core.ktx)
 }
 
 // -----------------------------------------------------------------------------
