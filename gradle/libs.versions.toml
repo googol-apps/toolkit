@@ -25,7 +25,7 @@ google-protobuf = {id = "com.google.protobuf", version = "0.10.0"}
 [libraries]
 # =============================== COMPOSE   =================================
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.13.0" }
-androidx-compose-bom = { group = "androidx.compose", name = "compose-bom-beta", version = "2026.10.01" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom-beta", version = "2026.11.00" }
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }

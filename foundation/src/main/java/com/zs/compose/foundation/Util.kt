@@ -1,4 +1,4 @@
-package com.zs.compose.foundation.util
+package com.zs.compose.foundation
 
 import android.os.Build
 import androidx.compose.ui.Modifier
