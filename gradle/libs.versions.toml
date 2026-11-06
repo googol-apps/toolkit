@@ -4,7 +4,7 @@
 #           are declared here. For single-use cases, inline values are preferred.
 # -----------------------------------------------------------------------------
 [versions]
-agp = "9.5.0"
+agp = "9.5.1"
 kotlin = "2.5.0-Beta2"
 coil = "3.6.3"
 
