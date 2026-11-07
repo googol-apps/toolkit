@@ -1,10 +1,24 @@
+@file:OptIn(ExperimentalFoundationStyleApi::class)
+
 package com.zs.compose.theme
 
+import androidx.compose.foundation.style.ExperimentalFoundationStyleApi
+import androidx.compose.foundation.style.StyleScope
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.zs.compose.foundation.Amber
+import com.zs.compose.foundation.CharcoalBlack
+import com.zs.compose.foundation.RedViolet
+import com.zs.compose.foundation.Rose
+import com.zs.compose.foundation.SignalWhite
+import com.zs.compose.foundation.UmbraGrey
 
 /**
  * Core color palette for [AppTheme].
@@ -35,7 +49,15 @@ class Colors(
     val onBackground: Color,
 ) {
 
-    val isLight: Boolean get() = background.luminance() > 0.5f
+    /**
+     * Returns `true` when the theme background colour is considered light.
+     *
+     * This is determined by the background colour's relative luminance.
+     * A luminance value greater than `0.5f` is treated as a light background;
+     * otherwise the background is considered dark.
+     */
+    val isLight: Boolean
+        get() = background.luminance() > 0.5f
 
     /**
      * Calculates a background color with an overlay based on the provided elevation.
@@ -44,7 +66,7 @@ class Colors(
      * @return A [Color] representing the background with an overlay.*/
     @Stable
     fun background(elevation: Dp) =
-        background.atTonalElevation(accent,  if (isLight) elevation else elevation * 0.5f)
+        background.atTonalElevation(accent, if (isLight) elevation else elevation * 0.5f)
 
     /** Returns a copy of this ColorScheme, optionally overriding some of the values. */
     fun copy(
@@ -72,6 +94,7 @@ class Colors(
 
         return true
     }
+
     // hashcode
     override fun hashCode(): Int {
         var result = accent.hashCode()
@@ -82,8 +105,67 @@ class Colors(
         result = 31 * result + onBackground.hashCode()
         return result
     }
+
     // stringfy
     override fun toString(): String {
         return "Colors(accent=$accent, onAccent=$onAccent, error=$error, onError=$onError, background=$background, onBackground=$onBackground)"
     }
 }
+
+/**
+ * Creates a complete color definition for the [AppTheme] using the default light theme values.
+ * @see darkColors
+ */
+@Stable
+fun lightColors(
+    accent: Color = Color(0xFF6750A4),
+    onAccent: Color = Color.SignalWhite,
+    error: Color = Color.RedViolet,
+    onError: Color = Color.SignalWhite,
+    background: Color = Color.White.atTonalElevation(accent, 1.dp),
+    onBackground: Color = Color.UmbraGrey,
+) = Colors(accent, onAccent, error, onError, background, onBackground)
+
+/**
+ * @see lightColors
+ */
+@Stable
+fun darkColors(
+    accent: Color = Color.Amber,
+    onAccent: Color = Color.SignalWhite,
+    error: Color = Color.Rose,
+    onError: Color = Color.SignalWhite,
+    background: Color = Color.CharcoalBlack,
+    onBackground: Color = Color.SignalWhite,
+) = Colors(accent, onAccent, error, onError, background, onBackground)
+
+/**
+ * CompositionLocal containing the preferred content color for a given position in the hierarchy.
+ * This typically represents the `on` color for a color in [Colors]. For example, if the
+ * background color is [Colors.background], this color is typically set to
+ * [Colors.onBackground].
+ *
+ * This color should be used for any typography / iconography, to ensure that the color of these
+ * adjusts when the background color changes. For example, on a dark background, text should be
+ * light, and on a light background, text should be dark.
+ *
+ * Defaults to [Color.Black] if no color has been explicitly set.
+ */
+val LocalContentColor: ProvidableCompositionLocal<Color> = compositionLocalOf { Color.Black }
+
+/**
+ * CompositionLocal used to pass [Colors] down the tree.
+ *
+ * Setting the value here is typically done as part of [AppTheme], which will automatically
+ * handle efficiently updating any changed colors without causing unnecessary recompositions.
+ */
+internal val LocalColors = staticCompositionLocalOf(::lightColors)
+
+/**
+ * The current [Colors] of [AppTheme], readable inside a style block.
+ *
+ * Reads are observed by the style resolver, so [LocalColors] should be a
+ * `compositionLocalOf` for theme changes to restyle components.
+ */
+val StyleScope.colors: Colors
+    get() = LocalColors.currentValue

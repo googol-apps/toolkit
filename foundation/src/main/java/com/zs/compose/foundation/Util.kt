@@ -3,7 +3,7 @@ package com.zs.compose.foundation
 import android.os.Build
 import androidx.compose.ui.Modifier
 
-// Represents some common utility funs
+// Represents some common utility fun's
 
 /**
  * Indicates whether the application is currently running within a preview environment (e.g., Android Studio's layout preview).

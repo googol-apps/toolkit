@@ -17,7 +17,7 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }             # For app modules
 maven-publish = { id = "maven-publish", version = "0.0.0" }             # Publishing plugin (placeholder)
-google-protobuf = {id = "com.google.protobuf", version = "0.10.0"}
+google-protobuf = {id = "com.google.protobuf", version = "0.10.1"}
 
 # -----------------------------------------------------------------------------
 # LIBRARIES

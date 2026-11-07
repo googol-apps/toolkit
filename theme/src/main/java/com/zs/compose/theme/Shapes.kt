@@ -1,8 +1,13 @@
+@file:OptIn(ExperimentalFoundationStyleApi::class)
+
 package com.zs.compose.theme
 
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.style.ExperimentalFoundationStyleApi
+import androidx.compose.foundation.style.StyleScope
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
 
 /**
@@ -69,3 +74,14 @@ class Shapes(
         return "Shapes(extraSmall=$xSmall, small=$small, medium=$medium, large=$large, extraLarge=$xLarge)"
     }
 }
+
+/** [CompositionLocal] holding the [Shapes] used by surfaces and components in [AppTheme]. */
+internal val LocalShapes = staticCompositionLocalOf { Shapes() }
+
+/**
+ * The current [Shapes] of [AppTheme], readable inside a style block.
+ *
+ * [LocalShapes] is static, so reads are not tracked; a changed [Shapes] only applies once the node is re-created.
+ */
+val StyleScope.shapes: Shapes
+    get() = LocalShapes.currentValue
