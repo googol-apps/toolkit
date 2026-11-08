@@ -2,8 +2,8 @@
 
 package com.zs.compose.theme
 
+import androidx.compose.foundation.style.CommonStyleScope
 import androidx.compose.foundation.style.ExperimentalFoundationStyleApi
-import androidx.compose.foundation.style.StyleScope
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.Stable
@@ -167,5 +167,5 @@ internal val LocalColors = staticCompositionLocalOf(::lightColors)
  * Reads are observed by the style resolver, so [LocalColors] should be a
  * `compositionLocalOf` for theme changes to restyle components.
  */
-val StyleScope.colors: Colors
+val CommonStyleScope.colors: Colors
     get() = LocalColors.currentValue

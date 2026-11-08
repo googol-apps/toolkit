@@ -1,17 +1,23 @@
 package com.zs.toolkit
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
-import com.zs.datastore.preferences.prefMapper
+import com.zs.compose.theme.AppTheme
+import com.zs.compose.theme.button.Button
 import com.zs.datastore.preferences.Preferences
+import com.zs.datastore.preferences.prefMapper
 import com.zs.datastore.preferences.stringPreferencesKey
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 
 val USER_NAME = stringPreferencesKey("user_name")
@@ -34,27 +40,18 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         pref = Preferences(this, "prefs", lifecycleScope)
 
-
-
-        lifecycleScope.launch {
-            //pref.clear()
-            while (true){
-                var saver = pref[NUMBER_STRING, 0]
-                Log.d(TAG, "onCreate: before = $saver")
-                pref[NUMBER_STRING] = saver + 1
-                Log.d(TAG, "onCreate: ${pref[NUMBER_STRING]}")
-                delay(2000)
-            }
-        }
-
         setContent {
-
-            DisposableEffect(Unit) {
-                onDispose {
-
-                }
+            Box(modifier = Modifier.fillMaxSize().background(AppTheme.colors.background(12.dp)), contentAlignment = Alignment.Center) {
+                Button(
+                    onClick = {},
+                    icon = {
+                        Box(Modifier)
+                    },
+                    label = {
+                        BasicText("Click Me!")
+                    }
+                )
             }
-
         }
     }
 }

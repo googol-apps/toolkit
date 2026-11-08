@@ -4,6 +4,7 @@ package com.zs.compose.theme
 
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.style.CommonStyleScope
 import androidx.compose.foundation.style.ExperimentalFoundationStyleApi
 import androidx.compose.foundation.style.StyleScope
 import androidx.compose.runtime.Immutable
@@ -83,5 +84,5 @@ internal val LocalShapes = staticCompositionLocalOf { Shapes() }
  *
  * [LocalShapes] is static, so reads are not tracked; a changed [Shapes] only applies once the node is re-created.
  */
-val StyleScope.shapes: Shapes
+val CommonStyleScope.shapes: Shapes
     get() = LocalShapes.currentValue
