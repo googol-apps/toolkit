@@ -57,6 +57,7 @@ import com.zs.compose.foundation.style.properties.StyleMarginProperty
 import com.zs.compose.foundation.style.properties.StyleMaxSizeProperty
 import com.zs.compose.foundation.style.properties.StyleMinSizeProperty
 import com.zs.compose.foundation.style.properties.StyleNoiseProperty
+import com.zs.compose.foundation.style.properties.StylePaddingProperty
 import com.zs.compose.foundation.style.properties.StyleScaleProperty
 import com.zs.compose.foundation.style.properties.StyleShapeProperty
 import com.zs.compose.foundation.style.properties.StyleTranslateProperty
@@ -161,9 +162,9 @@ internal class StyleableNode(
     private var height = Breadth.None
     private var minSize = DpSize.Zero
     private var maxSize = DpSize.Unspecified
+    private var padding = PaddingValues.Zero
 
     // properties
-
     private var shape = RectangleShape
     private var background: Fill = Fill.None
     private var foreground: Fill = Fill.None
@@ -197,11 +198,12 @@ internal class StyleableNode(
         val newHeight = resolver[StyleHeightProperty]
         val newMinSize = resolver[StyleMinSizeProperty]
         val newMaxSize = resolver[StyleMaxSizeProperty]
+        val newPadding = resolver[StylePaddingProperty]
 
         // Phase 2: compare against the stored values and collect the effects needed.
         var flags = 0
         if (shape != newShape) flags = flags or DIRTY_SEMANTICS // draw: the fills follow the shape
-        if (margin != newMargin || width != newWidth || height != newHeight || minSize != newMinSize || maxSize != newMaxSize)
+        if (margin != newMargin || padding != newPadding || width != newWidth || height != newHeight || minSize != newMinSize || maxSize != newMaxSize)
             flags = flags or DIRTY_MEASURE
         if (elevation != newElevation || newScale != scale || newTranslate != translate) flags = flags or DIRTY_LAYER
         if (background != newBackground || foreground != newForeground || border != newBorder || noise != newNoise)
@@ -224,6 +226,7 @@ internal class StyleableNode(
         width = newWidth
         minSize = newMinSize
         maxSize = newMaxSize
+        padding = newPadding
 
         if (shape != newShape) {
             shape = newShape
@@ -444,6 +447,11 @@ internal class StyleableNode(
     }
 
     // draw
+    // TODO: Draw using `dimensions` (the measured box size) instead of the child's intrinsic size.
+    //  The intrinsic size ignores padding and margin, so anything sized from it can spill into them.
+    //  Example: when text is larger than the content area and is ellipsized, it should be cut off at
+    //  the content edge (box minus padding). Today it is laid out against the unpadded size, so the
+    //  ellipsis can land inside the padding area instead of before it.
     override fun ContentDrawScope.draw() {
         Log.d(TAG, "draw: $dimensions size: $size")
         // CHECK: confirm the color still animates in a minified release build. R8 shouldn't remove
@@ -493,16 +501,70 @@ internal class StyleableNode(
         }
     }
 
-    // here update padding, margin, size, default size. etc.
+    // here update margin, padding, size, default size. etc.
+    // margin  -> space outside the box (only adds to the layout size)
+    // padding -> increment to the size (grows the box and the child, layer and outline cover it)
+    //
+    // Boxes, outside -> inside:
+    //
+    //  ┌──────────────────────── layout: what the parent sees ────────────────────────┐
+    //  │ margin                                                                        │
+    //  │   ┌──────────────────── box: layer + outline cover this ───────────────────┐ │
+    //  │   │ padding                                                                 │ │
+    //  │   │   ┌───────────── content: size / minSize / maxSize apply here ───────┐ │ │
+    //  │   │   │                                                                   │ │ │
+    //  │   │   │                      contentWidth x contentHeight                 │ │ │
+    //  │   │   │                                                                   │ │ │
+    //  │   │   └───────────────────────────────────────────────────────────────────┘ │ │
+    //  │   └─────────────────────────────────────────────────────────────────────────┘ │
+    //  └───────────────────────────────────────────────────────────────────────────────┘
+    //
+    //  layout = margin + box        box = padding + content
+    //
+    // Measure flow (horizontal axis shown, vertical works the same):
+    //
+    //  parent constraints ........ |<-------------------- max -------------------->|
+    //  1-2. minus margin ......... |  m |<--------------- inner ---------------->| m |
+    //  3.   minus padding ........ |  m |  p |<--------- content -------->| p |  m |
+    //  4.   resolve size ......... contentWidth   (fixed if min == max, else natural size
+    //                                              clamped to [minSize, maxSize])
+    //  5.   add padding .......... boxWidth    = contentWidth + pHorizontal
+    //                                           (clamped to the inner constraints)
+    //  5.   measure child ........ Constraints.fixed(boxWidth, boxHeight)
+    //  6.   add margin ........... layoutWidth = boxWidth + horizontal
+    //                                           (clamped to the parent constraints)
+    //  7.   outline .............. boxWidth x boxHeight  (padding included)
+    //  8.   place ................ at (margin.left, margin.top) with the layer
+    //
+    // Example: parent max = 400, margin = 8 per side, padding = 16 per side, width = 100
+    //
+    //    inner       = 400 - 16       = 384    (after margin)
+    //    content max = 384 - 32       = 352    (after padding)
+    //    contentWidth                 = 100    (from width)
+    //    boxWidth    = 100 + 32       = 132    (layer and outline are this wide)
+    //    layoutWidth = 132 + 16       = 148    (what the parent sees)
+    //
+    //    |8|        132 (box)        |8|
+    //       |16|  100 (content) |16|
     override fun MeasureScope.measure(measurable: Measurable, constraints: Constraints): MeasureResult {
-        // 1. Resolve and validate padding.
+        // 1. Resolve and validate margin.
         val lMargin = margin.calculateLeftPadding(layoutDirection)
         val tMargin = margin.calculateTopPadding()
         val rMargin = margin.calculateRightPadding(layoutDirection)
         val bMargin = margin.calculateBottomPadding()
 
-        require((lMargin >= 0.dp) and (tMargin >= 0.dp) and (rMargin >= 0.dp) and (bMargin>= 0.dp)) {
+        require((lMargin >= 0.dp) and (tMargin >= 0.dp) and (rMargin >= 0.dp) and (bMargin >= 0.dp)) {
             "Margin must be non-negative"
+        }
+
+        // Resolve and validate padding.
+        val lPadding = padding.calculateLeftPadding(layoutDirection)
+        val tPadding = padding.calculateTopPadding()
+        val rPadding = padding.calculateRightPadding(layoutDirection)
+        val bPadding = padding.calculateBottomPadding()
+
+        require((lPadding >= 0.dp) and (tPadding >= 0.dp) and (rPadding >= 0.dp) and (bPadding >= 0.dp)) {
+            "Padding must be non-negative"
         }
 
         val left = lMargin.roundToPx()
@@ -510,38 +572,45 @@ internal class StyleableNode(
         val horizontal = left + rMargin.roundToPx()
         val vertical = top + bMargin.roundToPx()
 
-        // 2. Space left for the child after margin (offset also clamps at zero).
+        // Padding is only a size increment, so only the totals are needed.
+        val pHorizontal = lPadding.roundToPx() + rPadding.roundToPx()
+        val pVertical = tPadding.roundToPx() + bPadding.roundToPx()
+
+        // 2. Space left for the box after margin (offset also clamps at zero).
         val inner = constraints.offset(-horizontal, -vertical)
 
-        // 3. Apply min/max/width/height to that space, one axis at a time.
+        // 3. Apply min/max/width/height to the space left after padding, one axis at a time.
         // The result's minWidth/maxWidth fields carry that axis's min/max.
-        val w = resolveAxis(inner.minWidth, inner.maxWidth, minSize.width, maxSize.width, width)
-        val h = resolveAxis(inner.minHeight, inner.maxHeight, minSize.height, maxSize.height, height)
+        val content = inner.offset(-pHorizontal, -pVertical)
+        val w = resolveAxis(content.minWidth, content.maxWidth, minSize.width, maxSize.width, width)
+        val h = resolveAxis(content.minHeight, content.maxHeight, minSize.height, maxSize.height, height)
 
-        // 4. Measure the child.
-        val placeable = measurable.measure(
-            Constraints(
-                minWidth = w.minWidth,
-                maxWidth = w.maxWidth,
-                minHeight = h.minWidth, // height's min, carried in the width slots
-                maxHeight = h.maxWidth, // height's max, carried in the width slots
-            )
-        )
+        // 4. Size before padding: the fixed size when min == max, otherwise the child's natural size.
+        val contentWidth = if (w.minWidth == w.maxWidth) w.maxWidth
+        else measurable.maxIntrinsicWidth(h.maxWidth).coerceIn(w.minWidth, w.maxWidth)
+        val contentHeight = if (h.minWidth == h.maxWidth) h.maxWidth // height's min/max, carried in the width slots
+        else measurable.maxIntrinsicHeight(contentWidth).coerceIn(h.minWidth, h.maxWidth)
 
-        // 5. Final size includes margin, limited by the parent.
+        // 5. Measure the child at size + padding.
+        val boxWidth = (contentWidth + pHorizontal).coerceIn(inner.minWidth, inner.maxWidth)
+        val boxHeight = (contentHeight + pVertical).coerceIn(inner.minHeight, inner.maxHeight)
+        val placeable = measurable.measure(Constraints.fixed(boxWidth, boxHeight))
+
+        // 6. Final size = child (size + padding) + margin, limited by the parent.
         val layoutWidth = constraints.constrainWidth(placeable.width + horizontal)
         val layoutHeight = constraints.constrainHeight(placeable.height + vertical)
 
-        // 6. Invalidate the cached outline only when the child's size changed.
+        // 7. Invalidate the cached outline only when the child's size changed.
         val size = Size(placeable.width.toFloat(), placeable.height.toFloat())
         if (size != dimensions) {
             dimensions = size
             invalidateOutline()
         }
 
-        // 7. Place the child at the padding offset on the reusable layer.
+        // 8. Place the child at the margin offset on the reusable layer.
         return layout(layoutWidth, layoutHeight) {
             placeable.placeWithLayer(left, top, layer = layer)
         }
     }
 }
+

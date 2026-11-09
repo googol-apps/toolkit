@@ -26,6 +26,7 @@ import com.zs.compose.foundation.style.properties.border
 import com.zs.compose.foundation.style.properties.elevation
 import com.zs.compose.foundation.style.properties.margin
 import com.zs.compose.foundation.style.properties.minSize
+import com.zs.compose.foundation.style.properties.padding
 import com.zs.compose.foundation.style.properties.shape
 import com.zs.compose.foundation.style.styleable
 import com.zs.compose.theme.colors
@@ -55,18 +56,17 @@ object Button {
         style: Style = {
             minSize(58.dp, 40.dp)
             background(colors.accent)
-            elevation(10.dp)
             shape(RoundedCornerShape(5))
-            margin(12.dp, 6.dp)
-            margin(2.dp)
-            border(4.dp, colors.onAccent)
+            padding(12.dp, 6.dp)
+            margin(1.dp)
+            border(2.dp, colors.onAccent)
             Log.d(TAG, "style: deafult")
             pressed {
                 this.animate {
                     background(Color.MetroGreen)
                     Log.d(TAG, "style: pressed")
                     shape(RoundedCornerShape(50))
-                    elevation(120.dp)
+                    elevation(5.dp)
                     border(4.dp, colors.onAccent)
                 }
             }
@@ -90,8 +90,8 @@ object Button {
                     interactionSource = finalInteractions,
                     indication = null
                 ),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+      //      horizontalArrangement = Arrangement.Center,
+      //      verticalAlignment = Alignment.CenterVertically
             ) {
             icon()
             label()

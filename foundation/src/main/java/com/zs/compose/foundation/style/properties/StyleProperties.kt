@@ -34,13 +34,15 @@ internal val StyleShapeProperty = stylePropertyOf("shape") { RectangleShape }
 internal val StyleMarginProperty = stylePropertyOf("margin", ::lerpPadding) { Padding.Zero }
 internal val StyleElevationProperty = stylePropertyOf("elevation") { 0.dp }
 internal val StyleBlurRadiusProperty = stylePropertyOf("blur_radius") { 0f }
-internal val StyleBorderProperty = stylePropertyOf("border") { BorderStroke(0.dp, Color.Unspecified) }
+internal val StyleBorderProperty =
+    stylePropertyOf("border") { BorderStroke(0.dp, Color.Unspecified) }
 internal val StyleScaleProperty = stylePropertyOf("scale", ::lerpOffset) { Offset(1f, 1f) }
 internal val StyleTranslateProperty = stylePropertyOf("translate", ::lerpDpOffset) { DpOffset.Zero }
 internal val StyleNoiseProperty = stylePropertyOf("noise") { 0f }
 internal val StyleMinSizeProperty = stylePropertyOf("min_size", ::lerpDp) { DpSize.Zero }
 internal val StyleWidthProperty = stylePropertyOf("width") { Breadth.None }
 internal val StyleHeightProperty = stylePropertyOf("height") { Breadth.None }
+internal val StylePaddingProperty = stylePropertyOf("padding", ::lerpPadding) { Padding.Zero }
 
 internal val StyleMaxSizeProperty = stylePropertyOf(
     name = "max_size", defaultValue = { DpSize.Unspecified },
@@ -88,17 +90,10 @@ fun CommonStyleScope.shape(shape: Shape) =
  * @param values The margin to apply to each side of the element.
  * @see padding
  */
-fun CommonStyleScope.margin(values: Padding) =
-    StyleMarginProperty.provide(values)
-
-fun CommonStyleScope.margin(all: Dp) =
-    StyleMarginProperty.provide(Padding(all))
-
-fun CommonStyleScope.margin(start: Dp, top: Dp, end: Dp, bottom: Dp) =
-    StyleMarginProperty.provide(Padding(start, top, end, bottom))
-
-fun CommonStyleScope.margin(horizontal: Dp, vertical: Dp) =
-    StyleMarginProperty.provide(Padding(horizontal, vertical))
+fun CommonStyleScope.margin(values: Padding) = StyleMarginProperty.provide(values)
+fun CommonStyleScope.margin(all: Dp) = margin(Padding(all))
+fun CommonStyleScope.margin(start: Dp, top: Dp, end: Dp, bottom: Dp) = margin(Padding(start, top, end, bottom))
+fun CommonStyleScope.margin(horizontal: Dp, vertical: Dp) = margin(Padding(horizontal, vertical))
 
 /** Sets the elevation to [elevation]. */
 fun CommonStyleScope.elevation(elevation: Dp) =
@@ -265,7 +260,25 @@ fun CommonStyleScope.fillHeight(@FloatRange(0.0, 1.0) fraction: Float = 1.0f) =
  * @param width portion of the available width, from `0f` to `1f`.
  * @param height portion of the available height, from `0f` to `1f`.
  */
-fun CommonStyleScope.fillSize(@FloatRange(0.0, 1.0) width: Float = 1.0f, @FloatRange(0.0, 1.0) height: Float = 1.0f) {
+fun CommonStyleScope.fillSize(
+    @FloatRange(0.0, 1.0) width: Float = 1.0f,
+    @FloatRange(0.0, 1.0) height: Float = 1.0f
+) {
     fillWidth(width)
     fillHeight(height)
 }
+
+/**
+ * Sets the padding (the space between this element's bounds and its content) to [values].
+ *
+ * The per-side [values] (start, top, end, bottom) are applied inside the element,
+ * so they reduce the space available to its content. To add space outside the
+ * element instead, use [margin].
+ *
+ * @param values The padding to apply to each side of the element.
+ * @see margin
+ */
+fun CommonStyleScope.padding(values: Padding) = StylePaddingProperty.provide(values)
+fun CommonStyleScope.padding(all: Dp) = padding(Padding(all))
+fun CommonStyleScope.padding(start: Dp, top: Dp, end: Dp, bottom: Dp) = padding(Padding(start, top, end, bottom))
+fun CommonStyleScope.padding(horizontal: Dp, vertical: Dp) = padding(Padding(horizontal, vertical))
