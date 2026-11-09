@@ -31,7 +31,7 @@ internal val StyleBackgroundProperty = stylePropertyOf("background") { Fill.None
 internal val StyleForegroundProperty = stylePropertyOf("foreground") { Fill.None }
 internal val StyleShapeProperty = stylePropertyOf("shape") { RectangleShape }
 
-internal val StylePaddingProperty = stylePropertyOf("padding", ::lerpPadding) { Padding.Zero }
+internal val StyleMarginProperty = stylePropertyOf("margin", ::lerpPadding) { Padding.Zero }
 internal val StyleElevationProperty = stylePropertyOf("elevation") { 0.dp }
 internal val StyleBlurRadiusProperty = stylePropertyOf("blur_radius") { 0f }
 internal val StyleBorderProperty = stylePropertyOf("border") { BorderStroke(0.dp, Color.Unspecified) }
@@ -78,18 +78,27 @@ fun CommonStyleScope.foreground(brush: Brush) =
 fun CommonStyleScope.shape(shape: Shape) =
     StyleShapeProperty.provide(shape)
 
-/** Sets the padding to [values]. */
-fun CommonStyleScope.padding(values: Padding) =
-    StylePaddingProperty.provide(values)
+/**
+ * Sets the margin (the space outside this element's bounds) to [values].
+ *
+ * Margin is expressed with the same [Padding] type used for padding, so the
+ * per-side [values] (start, top, end, bottom) are interpreted as outer spacing
+ * instead of inner content spacing.
+ *
+ * @param values The margin to apply to each side of the element.
+ * @see padding
+ */
+fun CommonStyleScope.margin(values: Padding) =
+    StyleMarginProperty.provide(values)
 
-fun CommonStyleScope.padding(all: Dp) =
-    StylePaddingProperty.provide(Padding(all))
+fun CommonStyleScope.margin(all: Dp) =
+    StyleMarginProperty.provide(Padding(all))
 
-fun CommonStyleScope.padding(start: Dp, top: Dp, end: Dp, bottom: Dp) =
-    StylePaddingProperty.provide(Padding(start, top, end, bottom))
+fun CommonStyleScope.margin(start: Dp, top: Dp, end: Dp, bottom: Dp) =
+    StyleMarginProperty.provide(Padding(start, top, end, bottom))
 
-fun CommonStyleScope.padding(horizontal: Dp, vertical: Dp) =
-    StylePaddingProperty.provide(Padding(horizontal, vertical))
+fun CommonStyleScope.margin(horizontal: Dp, vertical: Dp) =
+    StyleMarginProperty.provide(Padding(horizontal, vertical))
 
 /** Sets the elevation to [elevation]. */
 fun CommonStyleScope.elevation(elevation: Dp) =

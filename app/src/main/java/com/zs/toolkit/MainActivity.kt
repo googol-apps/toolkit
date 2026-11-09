@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.Alignment
@@ -42,15 +43,28 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             Box(modifier = Modifier.fillMaxSize().background(AppTheme.colors.background(12.dp)), contentAlignment = Alignment.Center) {
-                Button(
-                    onClick = {},
-                    icon = {
-                        Box(Modifier)
-                    },
-                    label = {
-                        BasicText("Click Me!")
-                    }
-                )
+                Column(){
+                    Button(
+                        onClick = {},
+                        icon = {
+                            Box(Modifier)
+                        },
+                        label = {
+                           Box() {
+                               BasicText("Button1!")
+                           }
+                        }
+                    )
+                    Button(
+                        onClick = {},
+                        icon = {
+                            Box(Modifier)
+                        },
+                        label = {
+                            BasicText("Click Me!")
+                        }
+                    )
+                }
             }
         }
     }

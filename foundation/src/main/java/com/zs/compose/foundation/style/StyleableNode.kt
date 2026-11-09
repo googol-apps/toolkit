@@ -53,10 +53,10 @@ import com.zs.compose.foundation.style.properties.StyleBorderProperty
 import com.zs.compose.foundation.style.properties.StyleElevationProperty
 import com.zs.compose.foundation.style.properties.StyleForegroundProperty
 import com.zs.compose.foundation.style.properties.StyleHeightProperty
+import com.zs.compose.foundation.style.properties.StyleMarginProperty
 import com.zs.compose.foundation.style.properties.StyleMaxSizeProperty
 import com.zs.compose.foundation.style.properties.StyleMinSizeProperty
 import com.zs.compose.foundation.style.properties.StyleNoiseProperty
-import com.zs.compose.foundation.style.properties.StylePaddingProperty
 import com.zs.compose.foundation.style.properties.StyleScaleProperty
 import com.zs.compose.foundation.style.properties.StyleShapeProperty
 import com.zs.compose.foundation.style.properties.StyleTranslateProperty
@@ -156,7 +156,7 @@ internal class StyleableNode(
     private var outline: Outline? = null
 
     // dimes
-    private var padding = PaddingValues.Zero
+    private var margin = PaddingValues.Zero
     private var width = Breadth.None
     private var height = Breadth.None
     private var minSize = DpSize.Zero
@@ -192,7 +192,7 @@ internal class StyleableNode(
         val newScale = resolver[StyleScaleProperty]
         val newTranslate = resolver[StyleTranslateProperty]
         val newNoise = resolver[StyleNoiseProperty]
-        val newPadding = resolver[StylePaddingProperty]
+        val newMargin = resolver[StyleMarginProperty]
         val newWidth = resolver[StyleWidthProperty]
         val newHeight = resolver[StyleHeightProperty]
         val newMinSize = resolver[StyleMinSizeProperty]
@@ -201,7 +201,7 @@ internal class StyleableNode(
         // Phase 2: compare against the stored values and collect the effects needed.
         var flags = 0
         if (shape != newShape) flags = flags or DIRTY_SEMANTICS // draw: the fills follow the shape
-        if (padding != newPadding || width != newWidth || height != newHeight || minSize != newMinSize || maxSize != newMaxSize)
+        if (margin != newMargin || width != newWidth || height != newHeight || minSize != newMinSize || maxSize != newMaxSize)
             flags = flags or DIRTY_MEASURE
         if (elevation != newElevation || newScale != scale || newTranslate != translate) flags = flags or DIRTY_LAYER
         if (background != newBackground || foreground != newForeground || border != newBorder || noise != newNoise)
@@ -219,7 +219,7 @@ internal class StyleableNode(
         scale = newScale
         translate = newTranslate
         noise = newNoise
-        padding = newPadding
+        margin = newMargin
         height = newHeight
         width = newWidth
         minSize = newMinSize
@@ -493,24 +493,24 @@ internal class StyleableNode(
         }
     }
 
-    // here update padding, size, default size. etc.
+    // here update padding, margin, size, default size. etc.
     override fun MeasureScope.measure(measurable: Measurable, constraints: Constraints): MeasureResult {
         // 1. Resolve and validate padding.
-        val lPadding = padding.calculateLeftPadding(layoutDirection)
-        val tPadding = padding.calculateTopPadding()
-        val rPadding = padding.calculateRightPadding(layoutDirection)
-        val bPadding = padding.calculateBottomPadding()
+        val lMargin = margin.calculateLeftPadding(layoutDirection)
+        val tMargin = margin.calculateTopPadding()
+        val rMargin = margin.calculateRightPadding(layoutDirection)
+        val bMargin = margin.calculateBottomPadding()
 
-        require((lPadding >= 0.dp) and (tPadding >= 0.dp) and (rPadding >= 0.dp) and (bPadding >= 0.dp)) {
-            "Padding must be non-negative"
+        require((lMargin >= 0.dp) and (tMargin >= 0.dp) and (rMargin >= 0.dp) and (bMargin>= 0.dp)) {
+            "Margin must be non-negative"
         }
 
-        val left = lPadding.roundToPx()
-        val top = tPadding.roundToPx()
-        val horizontal = left + rPadding.roundToPx()
-        val vertical = top + bPadding.roundToPx()
+        val left = lMargin.roundToPx()
+        val top = tMargin.roundToPx()
+        val horizontal = left + rMargin.roundToPx()
+        val vertical = top + bMargin.roundToPx()
 
-        // 2. Space left for the child after padding (offset also clamps at zero).
+        // 2. Space left for the child after margin (offset also clamps at zero).
         val inner = constraints.offset(-horizontal, -vertical)
 
         // 3. Apply min/max/width/height to that space, one axis at a time.
@@ -528,7 +528,7 @@ internal class StyleableNode(
             )
         )
 
-        // 5. Final size includes padding, limited by the parent.
+        // 5. Final size includes margin, limited by the parent.
         val layoutWidth = constraints.constrainWidth(placeable.width + horizontal)
         val layoutHeight = constraints.constrainHeight(placeable.height + vertical)
 
