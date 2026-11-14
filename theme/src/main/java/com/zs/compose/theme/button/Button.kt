@@ -65,7 +65,7 @@ object Button {
 
 
     val filledButtonStyle: Style = {
-        minSize(HorizontalMinSize)
+        minSize(VerticalMinSize)
         padding(HorizontalContentPadding)
         elevation(DefaultElevation)
         background(colors.accent)
@@ -143,10 +143,10 @@ object Button {
         spacing = if (orientation == Orientation.Horizontal) HorizontalIconSpacing else VerticalIconSpacing,
         style = style,
         interactions = interactions,
+        // Content contract expected by IconLabelMeasurePolicy: icon first, then label.
         content = {
-            // Content contract expected by IconLabelMeasurePolicy: icon first, then label.
-            Slot(content = icon)
-            Slot(content = label)
+            icon()
+            label()
         },
     )
 }

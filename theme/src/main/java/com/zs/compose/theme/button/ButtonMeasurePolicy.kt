@@ -1,5 +1,6 @@
 package com.zs.compose.theme.button
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -8,240 +9,127 @@ import androidx.compose.foundation.style.MutableStyleState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.IntrinsicMeasurable
-import androidx.compose.ui.layout.IntrinsicMeasureScope
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.MeasurePolicy
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
-import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.constrainHeight
+import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.offset
 import com.zs.compose.foundation.style.Style
 import com.zs.compose.foundation.style.styleable
 
-// Layouts, container shown as the outer box (c = center line of the container):
-//
-//  Horizontal, two children         Horizontal, one child
-//  ┌──────────────────────────┐     ┌──────────────────────────┐
-//  │                          │     │                          │
-//  │      ┌────┐ gap ┌─────┐  │     │          ┌─────┐         │
-//  │ c ───│icon│─────│label│──│     │ c ───────│label│─────────│
-//  │      └────┘     └─────┘  │     │          └─────┘         │
-//  │      |<-- block -->|     │     │                          │
-//  └──────────────────────────┘     └──────────────────────────┘
-//   block centered on x, each child centered on y (the center line c)
-//
-//  Vertical, two children           Vertical, one child
-//  ┌────────────────┐               ┌────────────────┐
-//  │     ┌────┐     │ ─┐            │                │
-//  │     │icon│     │  │            │                │
-//  │     └────┘     │  │ block      │    ┌──────┐    │
-//  │      gap       │  │            │ c ─│ icon │─   │
-//  │    ┌───────┐   │  │            │    └──────┘    │
-//  │ c ─│ label │─  │ ─┘            │                │
-//  │    └───────┘   │               │                │
-//  └────────────────┘               └────────────────┘
-//   block centered on y, each child centered on x (the center line c)
-//
-//  No children: nothing is placed, container = minimum constraints.
-//
-// Measure flow, main axis shown (horizontal; vertical works the same with width/height swapped):
-//
-//  parent max ............ |<------------------------ max ------------------------>|
-//  icon (first child) .... |<------------------------ max ------------------------>|
-//                          used = 0, so no leading gap
-//  label (second child) .. |  icon  | gap |<---------- max - icon - gap ---------->|
-//                          used = icon + gap, so a long label can't push past the icon
-//  contentMain = icon + gap + label  (gap only exists between two children)
-//  contentCross = max(icon, label)   (size across the axis)
-//
-// Placement (main axis):
-//
-//  |<------------------------ containerMain ------------------------>|
-//  |   free / 2   |<-------- contentMain -------->|   free / 2       |
-//                 ^ main starts here
-//                 icon at main, label at main + icon + gap
-//
-//  free = containerMain - contentMain. If it is negative (content bigger than the container),
-//  the block overflows equally on both sides instead of being cut at one end.
-
 /**
- * Arranges an optional icon and an optional label along [orientation], centered in the container.
+ * Measures button content: 0, 1 or 2 children, by convention `[icon, label]`.
  *
- * Empty slots emit no nodes, so the children are treated as an ordered list (icon first, then
- * label). [spacing] is applied only between two children, never before, after or around a single
- * one. With no children, the layout falls back to the minimum constraints. Placement uses
- * `placeRelative`, so a horizontal row mirrors in RTL.
+ * ```
+ * 0 -> empty, sized to min constraints
+ * 1 -> [ x ] centred
+ * 2 -> Horizontal: [icon] <sp> [label]    (mirrored in RTL)
+ *      Vertical:   [icon] / <sp> / [label] (RTL-agnostic)
+ * ```
  *
- * Terms used in the comments:
- * - main axis:  the stacking direction (x for Horizontal, y for Vertical)
- * - cross axis: the other direction; every child is centered on it
+ * @param orientation Main axis, used only when there are two children.
+ * @param spacing Gap between icon and label, used only when there are two children.
  */
 internal class ButtonMeasurePolicy(
     private val orientation: Orientation,
     private val spacing: Dp,
 ) : MeasurePolicy {
 
-    private val horizontal get() = orientation == Orientation.Horizontal
-
-    // Layouts (c = center line of the container):
-    //
-    //  Horizontal, two children         Vertical, two children
-    //  ┌──────────────────────────┐     ┌────────────────┐
-    //  │      ┌────┐ gap ┌─────┐  │     │     ┌────┐     │ ─┐
-    //  │ c ───│icon│─────│label│──│     │     │icon│     │  │ block, centered
-    //  │      └────┘     └─────┘  │     │     └────┘     │  │ on y
-    //  │      |<-- block -->|     │     │      gap       │  │
-    //  └──────────────────────────┘     │    ┌───────┐   │  │
-    //   block centered on x             │ c ─│ label │─  │ ─┘
-    //   each child centered on y        │    └───────┘   │
-    //                                   └────────────────┘
-    //  One child: centered on both axes.  No children: minimum constraints.
-    //
-    // Measure flow, main axis (each child gets what is left after earlier children and gaps):
-    //
-    //  icon  ... |<---------------------- max ---------------------->|   used = 0, no leading gap
-    //  label ... | icon | gap |<--------- max - icon - gap --------->|
-    //
-    // Placement, main axis:
-    //
-    //  |<------------------- containerMain ------------------->|
-    //  |  free / 2  |<------ contentMain ------>|  free / 2    |
-    //               ^ main starts here: icon at main, label at main + icon + gap
-    //  If free is negative the block overflows equally on both sides.
-
-    // ── Intrinsics ──────────────────────────────────────────────────────────
-    // The default implementation runs measure() with fake placeables whose size is the whole
-    // available space. The first child would then use up everything, the label would get ~0
-    // width, wrap one character per line, and report a huge intrinsic height. Parents that read
-    // intrinsics (such as the style node sizing the box) would then make the button far too big.
-    //
-    //  main axis:  sum of the children's intrinsics, with the gap only between children
-    //  cross axis: max over the children, each given the main space left after the earlier
-    //              children, the same rule as measure()
-
-    override fun IntrinsicMeasureScope.minIntrinsicWidth(
-        measurables: List<IntrinsicMeasurable>, height: Int,
-    ) = if (horizontal) mainIntrinsic(measurables, height, max = false)
-    else crossIntrinsic(measurables, height, max = false)
-
-    override fun IntrinsicMeasureScope.maxIntrinsicWidth(
-        measurables: List<IntrinsicMeasurable>, height: Int,
-    ) = if (horizontal) mainIntrinsic(measurables, height, max = true)
-    else crossIntrinsic(measurables, height, max = true)
-
-    override fun IntrinsicMeasureScope.minIntrinsicHeight(
-        measurables: List<IntrinsicMeasurable>, width: Int,
-    ) = if (horizontal) crossIntrinsic(measurables, width, max = false)
-    else mainIntrinsic(measurables, width, max = false)
-
-    override fun IntrinsicMeasureScope.maxIntrinsicHeight(
-        measurables: List<IntrinsicMeasurable>, width: Int,
-    ) = if (horizontal) crossIntrinsic(measurables, width, max = true)
-    else mainIntrinsic(measurables, width, max = true)
-
-    /** Size along the stacking axis: children side by side, gap only between them. */
-    private fun IntrinsicMeasureScope.mainIntrinsic(
-        measurables: List<IntrinsicMeasurable>,
-        crossSize: Int,
-        max: Boolean,
-    ): Int {
-        val gap = spacing.roundToPx()
-        var total = 0
-        measurables.forEachIndexed { index, child ->
-            if (index > 0) total += gap
-            total += child.mainIntrinsic(max, crossSize)
-        }
-        return total
-    }
-
-    /** Size across the stacking axis: the largest child at the main space it would get. */
-    private fun IntrinsicMeasureScope.crossIntrinsic(
-        measurables: List<IntrinsicMeasurable>,
-        mainSize: Int,
-        max: Boolean,
-    ): Int {
-        val gap = spacing.roundToPx()
-        var used = 0
-        var cross = 0
-        measurables.forEachIndexed { index, child ->
-            val gapBefore = if (index > 0) gap else 0
-            // Main space left for this child after earlier children and the gap.
-            val available = (mainSize - used - gapBefore).coerceAtLeast(0)
-            cross = maxOf(cross, child.crossIntrinsic(max, available))
-            // Advance by the child's real main size, never by the whole available space.
-            used += gapBefore + minOf(available, child.mainIntrinsic(max = true, Constraints.Infinity))
-        }
-        return cross
-    }
-
-    private fun IntrinsicMeasurable.mainIntrinsic(max: Boolean, crossSize: Int) = when {
-        horizontal && max -> maxIntrinsicWidth(crossSize)
-        horizontal -> minIntrinsicWidth(crossSize)
-        max -> maxIntrinsicHeight(crossSize)
-        else -> minIntrinsicHeight(crossSize)
-    }
-
-    private fun IntrinsicMeasurable.crossIntrinsic(max: Boolean, mainSize: Int) = when {
-        horizontal && max -> maxIntrinsicHeight(mainSize)
-        horizontal -> minIntrinsicHeight(mainSize)
-        max -> maxIntrinsicWidth(mainSize)
-        else -> minIntrinsicWidth(mainSize)
-    }
-
-    // ── Measure and place ───────────────────────────────────────────────────
     override fun MeasureScope.measure(
         measurables: List<Measurable>,
         constraints: Constraints,
     ): MeasureResult {
-        val gap = spacing.roundToPx()
 
-        // Size along the stacking axis (main) and across it (cross).
-        fun Placeable.main() = if (horizontal) width else height
-        fun Placeable.cross() = if (horizontal) height else width
+        // ── Validation ──
+        // Fail fast: the policy only knows how to lay out [icon, label].
+        require(measurables.size <= 2) { "Button supports at most 2 children (icon, label)." }
 
-        // Children may be smaller than the container; centering happens at placement.
-        val loose = constraints.copy(minWidth = 0, minHeight = 0)
-
-        // 1. Measure every child first: placement needs the total block size to center it.
-        val placeables = ArrayList<Placeable>(measurables.size)
-        var contentMain = 0
-        var contentCross = 0
-        for (measurable in measurables) {
-            // Space taken so far, including the gap. Zero for the first child, so no leading gap.
-            val used = if (placeables.isEmpty()) 0 else contentMain + gap
-            val placeable = measurable.measure(
-                if (horizontal) loose.offset(horizontal = -used) else loose.offset(vertical = -used)
-            )
-            contentMain = used + placeable.main()
-            contentCross = maxOf(contentCross, placeable.cross())
-            placeables += placeable
+        // ── Case 0: nothing to place ──
+        // Size falls back to the min constraints, so modifiers like widthIn(min = ..) or
+        // defaultMinSize still give an empty button its minimum footprint.
+        if (measurables.isEmpty()) {
+            return layout(constraints.minWidth, constraints.minHeight) {}
         }
 
-        // 2. Container size; with no children this falls back to the minimum constraints.
-        val width = (if (horizontal) contentMain else contentCross)
-            .coerceIn(constraints.minWidth, constraints.maxWidth)
-        val height = (if (horizontal) contentCross else contentMain)
-            .coerceIn(constraints.minHeight, constraints.maxHeight)
+        // ── Helpers ──
+        // Subtracts [used] from a max constraint, leaving Constraints.Infinity untouched
+        // (an unbounded axis stays unbounded instead of becoming a huge-but-finite number).
+        // It captures nothing, so it compiles to a plain static method with no allocation.
+        fun Int.minusBounded(used: Int): Int =
+            if (this == Constraints.Infinity) this else (this - used).coerceAtLeast(0)
 
-        // 3. Place: center the whole block on the main axis, each child on the cross axis.
+        // ── Shared setup ──
+        // Children never see the min constraints, because the container decides how to honour
+        // them (by centring the content inside a bigger box). Constraints is a value class,
+        // so copy() doesn't allocate.
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+
+        // ── Case 1: single child ──
+        // Measure it, size the container around it (respecting min/max), and centre it.
+        // Orientation and spacing are irrelevant with one child.
+        if (measurables.size == 1) {
+            val p = measurables[0].measure(loose)
+            val width = constraints.constrainWidth(p.width)
+            val height = constraints.constrainHeight(p.height)
+            return layout(width, height) {
+                p.placeRelative((width - p.width) / 2, (height - p.height) / 2)
+            }
+        }
+
+        // ── Case 2: icon + label ──
+
+        // Step 1: resolve axis and gap (px) once.
+        val horizontal = orientation == Orientation.Horizontal
+        val gap = spacing.roundToPx()
+
+        // Step 2: measure. The icon takes its natural size first. The label then gets the
+        // leftover main-axis space, so a long label shrinks/ellipsizes instead of pushing
+        // the icon out of the button.
+        val icon = measurables[0].measure(loose)
+        val label = measurables[1].measure(
+            if (horizontal) loose.copy(maxWidth = loose.maxWidth.minusBounded(icon.width + gap))
+            else loose.copy(maxHeight = loose.maxHeight.minusBounded(icon.height + gap))
+        )
+
+        // Step 3: content block size. Sum (+ gap) on the main axis, max on the cross axis.
+        val contentWidth =
+            if (horizontal) icon.width + gap + label.width else maxOf(icon.width, label.width)
+        val contentHeight =
+            if (horizontal) maxOf(icon.height, label.height) else icon.height + gap + label.height
+
+        // Step 4: container size. The content block coerced into the incoming constraints.
+        // It may be larger than the content when min constraints apply.
+        val width = constraints.constrainWidth(contentWidth)
+        val height = constraints.constrainHeight(contentHeight)
+
+        Log.d("ButtonMeasure", "constraints=$constraints icon=${icon.width}x${icon.height} label=${label.width}x${label.height}")
+
         return layout(width, height) {
-            val containerMain = if (horizontal) width else height
-            val containerCross = if (horizontal) height else width
+            // Step 5: centre the content block inside the container.
+            val startX = (width - contentWidth) / 2
+            val startY = (height - contentHeight) / 2
 
-            // Not clamped, so overflow is symmetric.
-            var main = (containerMain - contentMain) / 2
-            for (placeable in placeables) {
-                val cross = (containerCross - placeable.cross()) / 2
-                // placeRelative mirrors x in RTL; vertical is unaffected because cross is centered.
-                if (horizontal) placeable.placeRelative(main, cross)
-                else placeable.placeRelative(cross, main)
-                main += placeable.main() + gap
+            // Step 6: place children, each centred on the cross axis.
+            // placeRelative flips x in RTL, so icon and label swap sides automatically.
+            // Vertical stacking has no horizontal direction, so it is unaffected.
+            if (horizontal) {
+                icon.placeRelative(startX, startY + (contentHeight - icon.height) / 2)
+                label.placeRelative(
+                    startX + icon.width + gap,
+                    startY + (contentHeight - label.height) / 2,
+                )
+            } else {
+                icon.placeRelative(startX + (contentWidth - icon.width) / 2, startY)
+                label.placeRelative(
+                    startX + (contentWidth - label.width) / 2,
+                    startY + icon.height + gap,
+                )
             }
         }
     }
