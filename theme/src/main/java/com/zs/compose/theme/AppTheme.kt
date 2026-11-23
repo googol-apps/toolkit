@@ -158,6 +158,11 @@ val LocalNavAnimatedVisibilityScope =
     staticCompositionLocalOf<AnimatedVisibilityScope> { error("CompositionLocal LocalSharedTransition not present") }
 
 /**
+ * Controls whether shared element transitions are enabled.
+ */
+val LocalSharedAnimsEnabled = staticCompositionLocalOf { true }
+
+/**
  * Contains functions to access the current theme values provided at the call site's position in the
  * hierarchy.
  */
@@ -356,6 +361,8 @@ fun Modifier.sharedBounds(
     zIndexInOverlay: Float = 0f,
     clipInOverlayDuringTransition: OverlayClip = ParentClip,
 ) = composed {
+    val disabled = LocalSharedAnimsEnabled.current
+    if (disabled) return@composed Modifier
     val navAnimatedVisibilityScope = LocalNavAnimatedVisibilityScope.current
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val sharedContentState = rememberSharedContentState(key)
@@ -389,6 +396,8 @@ fun Modifier.sharedElement(
     zIndexInOverlay: Float = 0f,
     clipInOverlayDuringTransition: OverlayClip = ParentClip,
 ) = composed {
+    val disabled = LocalSharedAnimsEnabled.current
+    if (disabled) return@composed Modifier
     val sharedContentState = rememberSharedContentState(key = key)
     val navAnimatedVisibilityScope = LocalNavAnimatedVisibilityScope.current
     val sharedTransitionScope = LocalSharedTransitionScope.current

@@ -6,7 +6,7 @@
 [versions]
 coilNetworkOkhttp = "3.3.0"
 kotlin = "2.4.21"          # Kotlin language version
-agp = "9.5.0"              # Android Gradle Plugin
+agp = "9.5.2"              # Android Gradle Plugin
 material_icons = "1.7.8"   # Jetpack Compose Material Icons
 
 
@@ -24,7 +24,7 @@ maven-publish = { id = "maven-publish", version = "0.0.0" }                     
 # -----------------------------------------------------------------------------
 # Compose
 # -----------------------------------------------------------------------------
-compose-bom = { group = "androidx.compose", name = "compose-bom-beta", version = "2026.10.01" }
+compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2026.11.01" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.13.0" }
 androidx-material3 = { module = "androidx.compose.material3:material3", version = "1.4.0" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
@@ -32,7 +32,7 @@ androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-animation =  { group = "androidx.compose.animation", name = "animation" }
-androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version = "1.13.0-beta02" }
+androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version = "1.13.0" }
 androidx-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 androidx-ui-util = { group = "androidx.compose.ui", name = "ui-util" }
 androidx-material-ripple  = { group = "androidx.compose.material", name = "material-ripple" }
